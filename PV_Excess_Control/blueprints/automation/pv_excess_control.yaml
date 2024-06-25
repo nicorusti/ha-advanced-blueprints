@@ -167,9 +167,9 @@ blueprint:
         - **This sensor must be the same for all your created automations based
         on this blueprint!**
 
-        - **This sensor may only be specified when you cannot provide both the *Export Power*
-        and *Load Power* sensor! This is normally the case when you have a standard
-        inverter without battery.**
+        - **This sensor may only be specified when you cannot provide 
+        both the *Export Power* and *Load Power* sensor! This is normally 
+        the case when you have a standard inverter without battery.**
 
         - **Do not use this sensor when you have a hybrid inverter with battery.
         Otherwise the script cannot detect when your battery is discharging to
@@ -189,17 +189,20 @@ blueprint:
     home_battery_level:
       name: "Home battery level"
       description: >
-        Sensor which represents the **charge level of your home battery** (in percent)
+        Sensor which represents the **charge level of your home battery** 
+        (in percent)
 
 
         **[WARNING]**
 
-        - **This sensor must be the same for all your created automations based on this blueprint!**
+        - **This sensor must be the same for all your created 
+        automations based on this blueprint!**
 
 
         **[NOTE]**
 
-        - If your solar system is not coupled with a battery, leave this field empty
+        - If your solar system is not coupled with a battery, leave this field 
+        empty
       default:
       selector:
         entity:
@@ -209,23 +212,25 @@ blueprint:
     min_home_battery_level:
       name: "Minimum home battery level (end of day)"
       description: >
-        Minimum desired power level (in percent) of your home battery (end of day)
+        Minimum desired power level (in percent) of your home battery (end of 
+        day)
 
 
         **[WARNING]**
 
-        - **This sensor must be the same for all your created automations based on this blueprint!**
+        - **This sensor must be the same for all your created automations 
+        based on this blueprint!**
 
 
         **[NOTE]**
 
         - If your solar system is not coupled with a battery, this field will be ignored.
 
-        - *If you also specify **solar production forecast***, the script will
+        - If you also specify **solar production forecast***, the script will
         optimize your PV excess consumption right away and ensure that the
         specified *minimum home battery level* is reached at the **end of the day**.
 
-        - *If you **do not** specify solar production forecast*, the home battery
+        - If you **do not** specify solar production forecast*, the home battery
         will be charged to the specified level *before* switching on appliances.
       default: 100
       selector:
@@ -243,12 +248,14 @@ blueprint:
 
         **[WARNING]**
 
-        - **This sensor must be the same for all your created automations based on this blueprint!**
+        - **This sensor must be the same for all your created automations 
+        based on this blueprint!**
 
 
         **[NOTE]**
 
-        - If your solar system is not coupled with a battery, this field will be ignored.
+        - If your solar system is not coupled with a battery, this field 
+        will be ignored.
       default: 0
       selector:
         number:
@@ -260,20 +267,21 @@ blueprint:
     solar_production_forecast:
       name: "*Remaining* solar production forecast (Solcast or Forecast.Solar)"
       description: >
-        Sensor which represents the **remaining solar production forecast** for the
-        current day (in kWh). Will be used to ensure the specified
+        Sensor which represents the **remaining solar production forecast** for 
+        the current day (in kWh). Will be used to ensure the specified
         *minimum home battery level* is reached at the end of the day.
 
 
         **[WARNING]**
 
-        - **This sensor must be the same for all your created automations based on this blueprint!**
+        - **This sensor must be the same for all your created automations 
+        based on this blueprint!**
 
 
         **[NOTE]**
 
-        - If your solar system is not coupled with a battery or if
-        you are not enforcing a minimum appliance run time, leave this field empty
+        - If your solar system is not coupled with a battery or if you are not 
+        enforcing a minimum appliance run time, leave this field empty
       default:
       selector:
         entity:
@@ -282,7 +290,8 @@ blueprint:
 
     time_of_sunset:
       name: "The time of sunset at the current location "
-      description: "The time of sunset in the current location. You can use `sensor.sun_next_setting`"
+      description: >
+        The time of sunset in the current location. You can use `sensor.sun_next_setting`
       default:
       selector:
         entity:
@@ -291,14 +300,17 @@ blueprint:
 
     appliance_switch:
       name: "Appliance Entity"
-      description: "Entity to control the appliance (e.g. switch entity, climate entity, light entity, ...)"
+      description: >
+        Entity to control the appliance (e.g. switch entity, climate entity, 
+        light entity, ...)
       selector:
         entity:
           multiple: false
     appliance_switch_interval:
       name: "Appliance On/Off switch interval"
       description: >
-        Defines the minimum time (in minutes) before switching the appliance on/off again.
+        Defines the minimum time (in minutes) before switching the appliance 
+        on/off again.
 
         Will also be used as the averaging interval for available excess power.
 
@@ -308,7 +320,8 @@ blueprint:
         - When first creating and executing your automation, it will most likely
         take the here defined time till your appliance can switch on,
         even if enough excess solar is available beforehand.
-        This is due to the excess_history getting populated with zeros at the beginning.
+        This is due to the excess_history getting populated with zeros at 
+        the beginning.
       default: 5
       selector:
         number:
@@ -321,7 +334,8 @@ blueprint:
     appliance_on_only:
       name: "Only-On-Appliance"
       description: >
-        Tick this box if your appliance should only be turned on, but **never off**.
+        Tick this box if your appliance should only be turned on, but **never 
+        off**.
 
         Useful e.g. for washing machines, which should not be turned
         off even if there is not enough solar power anymore.
@@ -330,7 +344,8 @@ blueprint:
         boolean:
     appliance_once_only:
       name: "Only-Run-Once-Appliance"
-      description: "Tick this box if your appliance should run **once a day** at most."
+      description: >
+        Tick this box if your appliance should run **once a day** at most.
       default: False
       selector:
         boolean:
@@ -378,9 +393,11 @@ blueprint:
 
     dynamic_current_appliance:
       name: "Dynamic current control"
-      description: "Tick this box if your appliance supports different current levels.
+      description: "Tick this box if your appliance supports different current 
+      levels.
       \nUseful e.g. for **wallboxes**.\n
-      If False, the appliance will only be switched on or off in relation to the PV excess."
+      If False, the appliance will only be switched on or off in relation to 
+      the PV excess."
       default: False
       selector:
         boolean:
