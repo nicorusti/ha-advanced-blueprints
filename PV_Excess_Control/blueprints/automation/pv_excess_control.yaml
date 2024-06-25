@@ -3,9 +3,9 @@ blueprint:
   description: >
     ### **PV EXCESS OPTIMIZER**
 
-    Automatically control your appliances based on excess power from your 
+    Automatically control your appliances based on excess power from your
     solar system <br> <br>
-    &rarr; Remember to read the **[README](https://github.com/InventoCasa/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** 
+    &rarr; Remember to read the **[README](https://github.com/InventoCasa/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)**
     for prerequisites and installation instructions
 
     &rarr; If you need help, head over to the [thread in the HA community forum]
