@@ -53,7 +53,6 @@ blueprint:
           mode: box
           unit_of_measurement: "Priority level"
 
-
     grid_voltage:
       name: "Mains Voltage"
       description: >
@@ -185,7 +184,6 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
-
 
     home_battery_level:
       name: "Home battery level"
@@ -334,7 +332,6 @@ blueprint:
           step: 1
           unit_of_measurement: min
 
-
     appliance_on_only:
       name: "Only-On-Appliance"
       description: >
@@ -479,7 +476,6 @@ blueprint:
           step: 1
           unit_of_measurement: phases
 
-
     defined_current:
       name: "Appliance typical current draw"
       description: >
@@ -512,12 +508,10 @@ blueprint:
           domain: sensor
           multiple: false
 
-
 mode: single
 trigger:
-- platform: homeassistant
-  event: start
-
+  - platform: homeassistant
+    event: start
 
 action:
   - service: pyscript.pv_excess_control
