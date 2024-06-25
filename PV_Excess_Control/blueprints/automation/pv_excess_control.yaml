@@ -385,8 +385,9 @@ blueprint:
 
     appliance_maximum_run_time:
       name: "Appliance maximum daily runtime"
-      description: "Limits the maximum time the appliance should run in a day.
-      \n0 means infinite time. This value must be greater than minimum runtime."
+      description: >
+        Limits the maximum time the appliance should run in a day.
+        \n0 means infinite time. This value must be greater than minimum runtime.
       default: 0
       selector:
         number:
