@@ -9,4 +9,4 @@ If you like my work, you can support me here:\
 - Home Assistant v2023.1 or greater
 
 ## Documentation
-See seperate README within sub-folders
+See separate README within sub-folders
