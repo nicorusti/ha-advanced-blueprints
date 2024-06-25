@@ -511,9 +511,9 @@ blueprint:
           multiple: false
 
 
-    mode: single
+mode: single
 trigger:
-- platform: homeassistant
+    - platform: homeassistant
   event: start
 
 
