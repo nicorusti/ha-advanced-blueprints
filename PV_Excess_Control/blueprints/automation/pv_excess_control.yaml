@@ -398,11 +398,11 @@ blueprint:
 
     dynamic_current_appliance:
       name: "Dynamic current control"
-      description: "Tick this box if your appliance supports different current
-      levels.
-      \nUseful e.g. for **wallboxes**.\n
-      If False, the appliance will only be switched on or off in relation to
-      the PV excess."
+      description: >
+        Tick this box if your appliance supports different current levels.
+        \nUseful e.g. for **wallboxes**.\n
+        If False, the appliance will only be switched on or off in relation to
+        the PV excess.
       default: False
       selector:
         boolean:
