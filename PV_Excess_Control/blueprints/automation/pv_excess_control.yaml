@@ -93,8 +93,8 @@ blueprint:
     export_power:
       name: "Export Power"
       description: >
-        Sensor which contains your current **export power to the grid** in watts.
-        Must not be negative! For best results, this sensor should be
+        Sensor which contains your current **export power to the grid** in watts
+        . Must not be negative! For best results, this sensor should be
         updated at least every minute.
 
 
@@ -133,7 +133,8 @@ blueprint:
         - **This sensor must be the same for all your created automations
         based on this blueprint!**
 
-        - **This sensor must always be provided together with the *export power* sensor.**
+        - **This sensor must always be provided together with the 
+        *export power* sensor.**
 
 
         **[NOTE]**
@@ -141,10 +142,10 @@ blueprint:
         - If you can't measure this value directly, leave this field empty
         and provide a combined import/export power sensor.
 
-        - The combined household appliance consumption will always be prioritized,
-        meaning that if you e.g. turn on your electric oven, and as a result the
-        excess power is near zero, your appliance with the lowest priority will
-        be switched off (according to its On/Off switch interval).
+        - The combined household appliance consumption will always be 
+        prioritized, meaning that if you e.g. turn on your electric oven, and as a 
+        result the excess power is near zero, your appliance with the lowest 
+        priority will be switched off (according to its On/Off switch interval).
       default:
       selector:
         entity:
