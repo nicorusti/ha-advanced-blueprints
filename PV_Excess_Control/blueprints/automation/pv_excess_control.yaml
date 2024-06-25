@@ -224,11 +224,13 @@ blueprint:
 
         **[NOTE]**
 
-        - If your solar system is not coupled with a battery, this field will be ignored.
+        - If your solar system is not coupled with a battery, this field 
+        will be ignored.
 
         - If you also specify **solar production forecast***, the script will
         optimize your PV excess consumption right away and ensure that the
-        specified *minimum home battery level* is reached at the **end of the day**.
+        specified *minimum home battery level* is reached at the **end of the 
+        day**.
 
         - If you **do not** specify solar production forecast*, the home battery
         will be charged to the specified level *before* switching on appliances.
@@ -291,7 +293,8 @@ blueprint:
     time_of_sunset:
       name: "The time of sunset at the current location "
       description: >
-        The time of sunset in the current location. You can use `sensor.sun_next_setting`
+        The time of sunset in the current location. You can use 
+        `sensor.sun_next_setting`
       default:
       selector:
         entity:
@@ -508,7 +511,7 @@ blueprint:
           multiple: false
 
 
-mode: single
+    mode: single
 trigger:
 - platform: homeassistant
   event: start
