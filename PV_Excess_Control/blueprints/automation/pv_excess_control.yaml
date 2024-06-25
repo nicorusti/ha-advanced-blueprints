@@ -1,3 +1,4 @@
+---
 blueprint:
   name: INVENTOCASA - PV Excess Optimizer
   description: >
@@ -340,14 +341,14 @@ blueprint:
 
         Useful e.g. for washing machines, which should not be turned
         off even if there is not enough solar power anymore.
-      default: False
+      default: false
       selector:
         boolean:
     appliance_once_only:
       name: "Only-Run-Once-Appliance"
       description: >
         Tick this box if your appliance should run **once a day** at most.
-      default: False
+      default: false
       selector:
         boolean:
 
@@ -384,7 +385,8 @@ blueprint:
       name: "Appliance maximum daily runtime"
       description: >
         Limits the maximum time the appliance should run in a day.
-        \n0 means infinite time. This value must be greater than minimum runtime.
+        \n0 means infinite time. This value must be greater than minimum 
+        runtime.
       default: 0
       selector:
         number:
@@ -400,7 +402,7 @@ blueprint:
         \nUseful e.g. for **wallboxes**.\n
         If False, the appliance will only be switched on or off in relation to
         the PV excess.
-      default: False
+      default: false
       selector:
         boolean:
     appliance_current_set_entity:
