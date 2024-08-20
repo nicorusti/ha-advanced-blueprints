@@ -143,7 +143,7 @@ def reset_midnight():
         inst.switched_on_today = False
         inst.enforce_minimum_run = False
         inst.daily_run_time = 0
-        # If appliance is on at reset time, also reset time it was switched on
+        # If appliance is on at reset time, also reset switched_on_time
         if _get_state(inst.appliance_switch) == 'on':
             inst.switched_on_time = datetime.datetime.now()
 
@@ -688,6 +688,9 @@ class PvExcessControl:
         :param inst:        PVExcesscontrol Class instance
         :return:            True if remaining production is insufficient but there is still some excess power, false otherwise
         """
+        if inst.appliance_minimum_run_time == 0:
+            return False
+
         # Calculate remaining appliance power need to meet minimum runtime
         defined_power = inst.defined_current * PvExcessControl.grid_voltage * inst.phases
         projected_future_power_usage = -1 * (defined_power * ((current_run_time - inst.appliance_minimum_run_time) / 60)) / 1000
