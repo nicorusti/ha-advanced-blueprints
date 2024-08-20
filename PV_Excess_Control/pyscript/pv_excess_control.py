@@ -143,6 +143,9 @@ def reset_midnight():
         inst.switched_on_today = False
         inst.enforce_minimum_run = False
         inst.daily_run_time = 0
+        # If appliance is on at reset time, also reset time it was switched on
+        if _get_state(inst.appliance_switch) == 'on':
+            inst.switched_on_time = datetime.datetime.now()
 
 # 
 @time_trigger("cron(0 20 * * *)")
@@ -422,6 +425,7 @@ class PvExcessControl:
                         allowed_excess_power_consumption = 0
                     
                     # Check if appliance already run its maximum runtime and if so, turn it off
+                    # TODO: this approach does not work when the appliance gets switched on manually, outside of this automation
                     run_time = (inst.daily_run_time + (datetime.datetime.now() - inst.switched_on_time).total_seconds()) / 60
                     log.debug(f'{inst.log_prefix} Appliance is on, and it has run for {run_time:.1f} out of maximum {inst.appliance_maximum_run_time:.1f} minutes')
                     if inst.appliance_maximum_run_time > 0 and run_time > inst.appliance_maximum_run_time:
