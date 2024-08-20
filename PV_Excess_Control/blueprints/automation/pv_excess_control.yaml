@@ -246,7 +246,12 @@ blueprint:
 
     time_of_sunset:
       name: "The time of sunset at the current location "
-      description: "The time of sunset in the current location. You can use `sensor.sun_next_setting`"
+      description: >
+        The time of sunset in the current location. You can use `sensor.sun_next_setting`.
+
+        **[NOTE]**
+
+        - This MUST be set if Appliance minimum daily runtime is set.
       default:
       selector:
         entity:
