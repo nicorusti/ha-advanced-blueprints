@@ -367,7 +367,7 @@ class PvExcessControl:
                     if avg_excess_power >= PvExcessControl.min_excess_power and inst.dynamic_current_appliance:
                         # try to increase dynamic current, because excess solar power is available
                         prev_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
-                        excess_amps = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1) + prev_amps
+                        excess_amps = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases) + prev_amps, 1)
                         amps = max(inst.min_current, min(excess_amps, inst.max_current))
                         if amps > (prev_amps+0.09):
                             _set_value(inst.appliance_current_set_entity, amps)
@@ -462,7 +462,7 @@ class PvExcessControl:
                             else:
                                 actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
                             diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
-                            target_current = max(inst.min_current, actual_current + diff_current)
+                            target_current = round(max(inst.min_current, actual_current + diff_current), 1)
                             log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
                             if inst.min_current < target_current < actual_current:
                                 # current can be reduced
