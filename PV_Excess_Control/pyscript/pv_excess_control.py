@@ -366,13 +366,21 @@ class PvExcessControl:
                     log.debug(f'{log_prefix} Appliance is already switched on and has run for {(run_time / 60):.1f} minutes.')
                     if avg_excess_power >= PvExcessControl.min_excess_power and inst.dynamic_current_appliance:
                         # try to increase dynamic current, because excess solar power is available
-                        prev_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
-                        excess_amps = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases) + prev_amps, 1)
-                        amps = max(inst.min_current, min(excess_amps, inst.max_current))
-                        if amps > (prev_amps+0.09):
-                            _set_value(inst.appliance_current_set_entity, amps)
-                            log.info(f'{log_prefix} Setting dynamic current appliance from {prev_amps} to {amps} A per phase.')
-                            diff_power = (amps-prev_amps) * PvExcessControl.grid_voltage * inst.phases
+                        if inst.actual_power is None:
+                            actual_current = round((inst.defined_current * PvExcessControl.grid_voltage * inst.phases) / (
+                                        PvExcessControl.grid_voltage * inst.phases), 1)
+                        else:
+                            actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
+                        prev_set_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
+                        diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
+                        target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
+                        log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
+                        # TODO: minimum current step should be made configurable (e.g. 1A)
+                        if diff_current > 0.09:
+                            _set_value(inst.appliance_current_set_entity, target_current)
+                            log.info(f'{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase.')
+                            # TODO: should we use previously set current below there?
+                            diff_power = (target_current-actual_current) * PvExcessControl.grid_voltage * inst.phases
                             # "restart" history by subtracting power difference from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -diff_power)
 
