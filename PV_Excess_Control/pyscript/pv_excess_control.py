@@ -375,7 +375,6 @@ class PvExcessControl:
                         prev_set_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
                         # Diff current has 1A extra, to compensate for rounding and small oscillations
                         diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
-                        # TODO: here you should add average load current.. 
                         target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
                         log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
                         # TODO: minimum current step should be made configurable (e.g. 1A)
@@ -489,7 +488,8 @@ class PvExcessControl:
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
                                 # current cannot be reduced
-                                # turn off appliance
+                                # Set current to 0 and turn off appliance
+                                _set_value(inst.appliance_current_set_entity, 0)
                                 power_consumption = self.switch_off(inst)
                                 if power_consumption != 0:
                                     prev_consumption_sum += power_consumption
