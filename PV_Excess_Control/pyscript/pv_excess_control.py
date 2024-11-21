@@ -252,6 +252,7 @@ class PvExcessControl:
         inst.appliance_maximum_run_time = appliance_maximum_run_time
         inst.appliance_minimum_run_time = appliance_minimum_run_time
         inst.enforce_minimum_run = False
+        inst.min_solar_percent = 0.5
 
         inst.phases = appliance_phases
 
@@ -372,7 +373,9 @@ class PvExcessControl:
                         else:
                             actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
                         prev_set_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
-                        diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
+                        # Diff current has 1A extra, to compensate for rounding and small oscillations
+                        diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
+                        # TODO: here you should add average load current.. 
                         target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
                         log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
                         # TODO: minimum current step should be made configurable (e.g. 1A)
@@ -470,9 +473,10 @@ class PvExcessControl:
                             else:
                                 actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
                             diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
-                            target_current = round(max(inst.min_current, actual_current + diff_current), 1)
+                            # Round up by 1A to compensate for oscillations
+                            target_current = round(max(inst.min_current, actual_current + diff_current), 1)+1
                             log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
-                            if inst.min_current < target_current < actual_current:
+                            if (inst.min_current*inst.min_solar_percent) < target_current < actual_current:
                                 # current can be reduced
                                 log.info(f'{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A.')
                                 _set_value(inst.appliance_current_set_entity, target_current)
