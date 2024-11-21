@@ -476,7 +476,7 @@ class PvExcessControl:
                             # Round up by 1A to compensate for oscillations
                             target_current = round(max(inst.min_current, actual_current + diff_current), 1)
                             log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
-                            if (inst.min_current*inst.min_solar_percent) < target_current < actual_current:
+                            if inst.min_current < target_current < actual_current:
                                 # current can be reduced
                                 log.info(f'{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A.')
                                 _set_value(inst.appliance_current_set_entity, target_current)
@@ -488,14 +488,17 @@ class PvExcessControl:
                                 # "restart" history by adding defined power to each history value within the specified time frame
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
-                                # current cannot be reduced
-                                # Set current to 0 and turn off appliance
-                                _set_value(inst.appliance_current_set_entity, 0)
-                                power_consumption = self.switch_off(inst)
-                                if power_consumption != 0:
-                                    prev_consumption_sum += power_consumption
-                                    log.debug(f'{log_prefix} Added {power_consumption=} W to prev_consumption_sum, '
-                                              f'which is now {prev_consumption_sum} W.')
+                                if abs(diff_current) <  inst.min_current * inst.min_solar_percent:
+                                    log.debug(f'{log_prefix} leaving dynamic appliance on at minimum current on at least {inst.min_solar_percent} solar')
+                                else: 
+                                    # current cannot be reduced
+                                    # Set current to 0 and turn off appliance
+                                    _set_value(inst.appliance_current_set_entity, 0)
+                                    power_consumption = self.switch_off(inst)
+                                    if power_consumption != 0:
+                                        prev_consumption_sum += power_consumption
+                                        log.debug(f'{log_prefix} Added {power_consumption=} W to prev_consumption_sum, '
+                                                f'which is now {prev_consumption_sum} W.')
 
                         else:
                             # Try to switch off appliance
