@@ -376,7 +376,7 @@ class PvExcessControl:
                         target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
                         log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
                         # TODO: minimum current step should be made configurable (e.g. 1A)
-                        if diff_current > 0.09:
+                        if diff_current > 0.09 and prev_set_amps < target_current :
                             _set_value(inst.appliance_current_set_entity, target_current)
                             log.info(f'{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase.')
                             # TODO: should we use previously set current below there?
