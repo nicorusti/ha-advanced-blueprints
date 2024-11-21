@@ -472,9 +472,9 @@ class PvExcessControl:
                                         PvExcessControl.grid_voltage * inst.phases), 1)
                             else:
                                 actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
-                            diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
+                            diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
                             # Round up by 1A to compensate for oscillations
-                            target_current = round(max(inst.min_current, actual_current + diff_current), 1)+1
+                            target_current = round(max(inst.min_current, actual_current + diff_current), 1)
                             log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
                             if (inst.min_current*inst.min_solar_percent) < target_current < actual_current:
                                 # current can be reduced
