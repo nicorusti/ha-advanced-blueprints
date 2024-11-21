@@ -246,6 +246,7 @@ class PvExcessControl:
         inst.appliance_switch_interval = int(appliance_switch_interval)
         inst.appliance_current_set_entity = appliance_current_set_entity
         inst.actual_power = actual_power
+        inst.previous_current_buffer = 0
         inst.defined_current = float(defined_current)
         inst.appliance_on_only = bool(appliance_on_only)
         inst.appliance_once_only = appliance_once_only
@@ -378,14 +379,21 @@ class PvExcessControl:
                         target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
                         log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
                         # TODO: minimum current step should be made configurable (e.g. 1A)
-                        # increase current if it was already set above min_current, or if appliance can run at min current partially on solar
-                        if diff_current > 0.09 and prev_set_amps < target_current and (prev_set_amps > inst.min_current or (prev_set_amps < inst.min_current and diff_current > inst.min_solar_percent * inst.min_current )):
+                        # increase current if following conditions are met
+                        # - current has to be increased
+                        # - previously set current was above minimum, alternatively  if appliance can run at min current partially on solar
+                        # - If appliance was not just turned on from 0 in last round (as some chargers take a minute to start charging)
+                        if diff_current > 0.09 \
+                            and prev_set_amps < target_current \
+                            and (prev_set_amps > inst.min_current or (prev_set_amps < inst.min_current and diff_current > inst.min_solar_percent * inst.min_current ))\
+                            and not (inst.previous_current_buffer == 0 and actual_current > 0 ):
                             _set_value(inst.appliance_current_set_entity, target_current)
                             log.info(f'{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase.')
                             # TODO: should we use previously set current below there?
                             diff_power = (target_current-actual_current) * PvExcessControl.grid_voltage * inst.phases
                             # "restart" history by subtracting power difference from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -diff_power)
+                        inst.previous_current_buffer = actual_current
 
                 elif not (inst.appliance_once_only and inst.switched_on_today):
                     # check if appliance can be switched on
@@ -494,6 +502,7 @@ class PvExcessControl:
                                     # current cannot be reduced
                                     # Set current to 0 and turn off appliance
                                     _set_value(inst.appliance_current_set_entity, 0)
+                                    inst.previous_current_buffer = 0
                                     power_consumption = self.switch_off(inst)
                                     if power_consumption != 0:
                                         prev_consumption_sum += power_consumption
