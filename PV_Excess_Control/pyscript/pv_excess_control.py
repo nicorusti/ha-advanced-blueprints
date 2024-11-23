@@ -388,7 +388,7 @@ class PvExcessControl:
                         # - If appliance was not just turned on from 0 in last round (as some chargers take a minute to start charging)
                         if diff_current > 0.09 \
                             and prev_set_amps < target_current \
-                            and (prev_set_amps > inst.min_current or (prev_set_amps < inst.min_current and diff_current > inst.min_solar_percent * inst.min_current ))\
+                            and (prev_set_amps >= inst.min_current or (prev_set_amps < inst.min_current and diff_current > inst.min_solar_percent * inst.min_current ))\
                             and not (inst.previous_current_buffer == 0 and actual_current > 0 ):
                             _set_value(inst.appliance_current_set_entity, target_current)
                             log.info(f'{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase.')
