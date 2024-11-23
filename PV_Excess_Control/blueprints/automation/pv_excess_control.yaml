@@ -283,7 +283,24 @@ blueprint:
           max: 60
           step: 1
           unit_of_measurement: min
+    appliance_switch_off_interval:
+      name: "Appliance Off switch interval"
+      description: >
+        Defines the minimum time (in minutes) before switching the appliance off again.
+        
+        Will also be used as the averaging interval for available excess power.
 
+
+        **[NOTE]**
+
+        - This currently only applies to dynamic current instances
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          step: 1
+          unit_of_measurement: min
 
     appliance_on_only:
       name: "Only-On-Appliance"
@@ -483,6 +500,7 @@ action:
       min_solar_percent: !input min_solar_percent
       appliance_switch: !input appliance_switch
       appliance_switch_interval: !input appliance_switch_interval
+      appliance_switch_off_interval: !input appliance_switch_off_interval
       appliance_current_set_entity: !input appliance_current_set_entity
       actual_power: !input actual_power
       defined_current: !input defined_current

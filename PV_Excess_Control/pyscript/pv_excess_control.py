@@ -166,7 +166,7 @@ def enforce_runtime():
 @service
 def pv_excess_control(automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                       min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
-                      max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
+                      max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
                       appliance_minimum_run_time):
@@ -178,7 +178,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
     PvExcessControl(automation_id, appliance_priority, export_power, pv_power,
                     load_power, home_battery_level, min_home_battery_level,
                     dynamic_current_appliance, appliance_phases, min_current,
-                    max_current, min_solar_percent, appliance_switch, appliance_switch_interval,
+                    max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
                     grid_voltage, import_export_power, home_battery_capacity, solar_production_forecast, time_of_sunset,
                     appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time)
@@ -218,7 +218,7 @@ class PvExcessControl:
 
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                  min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
-                 max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
+                 max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
                  appliance_minimum_run_time):
@@ -244,7 +244,7 @@ class PvExcessControl:
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
         inst.appliance_switch_interval = int(appliance_switch_interval)
-        inst.appliance_switch_off_interval = 10 
+        inst.appliance_switch_off_interval = int(appliance_switch_off_interval) 
         inst.appliance_current_set_entity = appliance_current_set_entity
         inst.actual_power = actual_power
         inst.previous_current_buffer = 0
