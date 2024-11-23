@@ -244,6 +244,7 @@ class PvExcessControl:
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
         inst.appliance_switch_interval = int(appliance_switch_interval)
+        inst.appliance_switch_off_interval = 10 
         inst.appliance_current_set_entity = appliance_current_set_entity
         inst.actual_power = actual_power
         inst.previous_current_buffer = 0
@@ -339,6 +340,8 @@ class PvExcessControl:
                     # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
                     # calc avg based on pv excess (solar power - load power) according to specified window
                     avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
+                    avg_excess_power_off = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_off_interval:]) / max(1,inst.appliance_switch_off_interval))
+
                     log.debug(f'{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)'
                               f' OR remaining solar forecast is higher than remaining capacity of home battery. '
                               f'Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W')
@@ -353,7 +356,7 @@ class PvExcessControl:
                               f'Calculated average excess power based on >> export power <<: {avg_excess_power} W')
 
                 # add instance including calculated excess power to inverted list (priority from low to high)
-                instances.insert(0, {'instance': inst, 'avg_excess_power': avg_excess_power})
+                instances.insert(0, {'instance': inst, 'avg_excess_power': avg_excess_power, 'avg_excess_power_off': avg_excess_power_off})
 
                 # Prevent the appliance from turning on if it already run its maximum daily runtime
                 if inst.appliance_maximum_run_time > 0 and (inst.daily_run_time / 60) > inst.appliance_maximum_run_time:
@@ -430,6 +433,7 @@ class PvExcessControl:
             for dic in instances:
                 inst = dic['instance']
                 avg_excess_power = dic['avg_excess_power'] + prev_consumption_sum
+                avg_excess_power_off = dic['avg_excess_power_off'] + prev_consumption_sum
                 log_prefix = f'[{inst.appliance_switch} (Prio {inst.appliance_priority})]'
 
                 # -------------------------------------------------------------------
@@ -480,10 +484,13 @@ class PvExcessControl:
                                         PvExcessControl.grid_voltage * inst.phases), 1)
                             else:
                                 actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
+                            # diff_current is used to eventually lower current every interval
+                            # diff_current_off is evaluated over the switch off interval and it is therefore used to turn off appliance 
                             diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
+                            diff_current_off = round(avg_excess_power_off / (PvExcessControl.grid_voltage * inst.phases), 1)+1
                             # Round up by 1A to compensate for oscillations
                             target_current = round(max(inst.min_current, actual_current + diff_current), 1)
-                            log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
+                            log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A')
                             if inst.min_current < target_current < actual_current:
                                 # current can be reduced
                                 log.info(f'{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A.')
@@ -496,7 +503,7 @@ class PvExcessControl:
                                 # "restart" history by adding defined power to each history value within the specified time frame
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
-                                if abs(diff_current) <  inst.min_current * inst.min_solar_percent:
+                                if abs(diff_current_off) <  inst.min_current * inst.min_solar_percent:
                                     log.debug(f'{log_prefix} leaving dynamic appliance on at minimum current on at least {inst.min_solar_percent} solar')
                                 else: 
                                     # current cannot be reduced
@@ -748,7 +755,7 @@ class PvExcessControl:
 
         if projected_future_power_usage >= remaining_power and current_run_time < inst.appliance_minimum_run_time:
             # If we get here then the appliance is expected to use more
-            # electricity to hit the minimum run time then the solar
+            # electricity to hit the minimum run time than the solar
             # production for the rest of the day
             # So we want to run if there is any excess power, otherwise we
             # have to run later at night
