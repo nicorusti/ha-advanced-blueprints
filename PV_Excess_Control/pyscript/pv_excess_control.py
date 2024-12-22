@@ -491,7 +491,7 @@ class PvExcessControl:
                             # Round up by 1A to compensate for oscillations
                             target_current = round(max(inst.min_current, actual_current + diff_current), 1)
                             log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A')
-                            if inst.min_current < target_current < actual_current:
+                            if inst.min_current <= target_current < actual_current:
                                 # current can be reduced
                                 log.info(f'{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A.')
                                 _set_value(inst.appliance_current_set_entity, target_current)
