@@ -225,7 +225,7 @@ blueprint:
           unit_of_measurement: kWh
 
     solar_production_forecast:
-      name: "*Remaining* solar production forecast (Solcast)"
+      name: "*Remaining* solar production forecast (Solcast or Forecast.Solar)"
       description: >
         Sensor which represents the **remaining solar production forecast** for the current day (in kWh). Will be used to ensure the specified *minimum home battery level* is reached at the end of the day.
 
@@ -283,7 +283,24 @@ blueprint:
           max: 60
           step: 1
           unit_of_measurement: min
+    appliance_switch_off_interval:
+      name: "Appliance Off switch interval"
+      description: >
+        Defines the minimum time (in minutes) before switching the appliance off again.
+        
+        Will also be used as the averaging interval for available excess power.
 
+
+        **[NOTE]**
+
+        - This currently only applies to dynamic current instances
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          step: 1
+          unit_of_measurement: min
 
     appliance_on_only:
       name: "Only-On-Appliance"
@@ -388,7 +405,7 @@ blueprint:
       selector:
         number:
           min: 0.1
-          max: 16
+          max: 32
           step: 0.1
           unit_of_measurement: A
     max_current:
@@ -406,9 +423,26 @@ blueprint:
       selector:
         number:
           min: 0.1
-          max: 16
+          max: 32
           step: 0.1
           unit_of_measurement: A
+    min_solar_percent:
+      name: "Minimum solar power percentage"
+      description: >
+        Minimum percentage of solar power to run the appliance. E.g. if you configure it to 40%, your appliance will be on as long as 40% of the power comes from solar. This is useful to keep running the appliance even at times of low production, like sunset or sunrise, or in case you have a PV that is not sufficient to fully power the appliance.
+
+
+        **[NOTE]**
+
+        - **Currently only works with dynamic current appliances! It therefore runs the dynamic current appliance at minimum current as long as it can be partially run on solar.**
+
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
     appliance_phases:
       name: "Appliance Phases"
       description: >
@@ -457,9 +491,9 @@ blueprint:
 
 
 mode: single
-trigger:
-- platform: homeassistant
-  event: start
+triggers:
+  - trigger: homeassistant
+    event: start
 
 
 action:
@@ -476,8 +510,10 @@ action:
       appliance_phases: !input appliance_phases
       min_current: !input min_current
       max_current: !input max_current
+      min_solar_percent: !input min_solar_percent
       appliance_switch: !input appliance_switch
       appliance_switch_interval: !input appliance_switch_interval
+      appliance_switch_off_interval: !input appliance_switch_off_interval
       appliance_current_set_entity: !input appliance_current_set_entity
       actual_power: !input actual_power
       defined_current: !input defined_current
