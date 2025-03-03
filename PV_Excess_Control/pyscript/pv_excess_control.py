@@ -197,7 +197,7 @@ def enforce_runtime():
 @service
 def pv_excess_control(automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                       min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
-                      max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
+                      max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
                       appliance_minimum_run_time, appliance_runtime_deadline):
@@ -209,7 +209,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
     PvExcessControl(automation_id, appliance_priority, export_power, pv_power,
                     load_power, home_battery_level, min_home_battery_level,
                     dynamic_current_appliance, appliance_phases, min_current,
-                    max_current, appliance_switch, appliance_switch_interval,
+                    max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
                     grid_voltage, import_export_power, home_battery_capacity, solar_production_forecast, time_of_sunset,
                     appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time, appliance_runtime_deadline)
@@ -249,7 +249,7 @@ class PvExcessControl:
 
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                  min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
-                 max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
+                 max_current, min_solar_percent, appliance_switch, appliance_switch_interval, appliance_switch_off_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
                  appliance_minimum_run_time, appliance_runtime_deadline):
@@ -275,8 +275,10 @@ class PvExcessControl:
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
         inst.appliance_switch_interval = int(appliance_switch_interval)
+        inst.appliance_switch_off_interval = int(appliance_switch_off_interval) 
         inst.appliance_current_set_entity = appliance_current_set_entity
         inst.actual_power = actual_power
+        inst.previous_current_buffer = 0
         inst.defined_current = float(defined_current)
         inst.appliance_on_only = bool(appliance_on_only)
         inst.appliance_once_only = appliance_once_only
@@ -284,6 +286,7 @@ class PvExcessControl:
         inst.appliance_minimum_run_time = appliance_minimum_run_time
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
+        inst.min_solar_percent = min_solar_percent/100
 
         inst.phases = appliance_phases
 
@@ -369,6 +372,8 @@ class PvExcessControl:
                     # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
                     # calc avg based on pv excess (solar power - load power) according to specified window
                     avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
+                    avg_excess_power_off = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_off_interval:]) / max(1,inst.appliance_switch_off_interval))
+                    
                     log.debug(f'{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)'
                               f' OR remaining solar forecast is higher than remaining capacity of home battery. '
                               f'Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W')
@@ -383,7 +388,7 @@ class PvExcessControl:
                               f'Calculated average excess power based on >> export power <<: {avg_excess_power} W')
 
                 # add instance including calculated excess power to inverted list (priority from low to high)
-                instances.insert(0, {'instance': inst, 'avg_excess_power': avg_excess_power})
+                instances.insert(0, {'instance': inst, 'avg_excess_power': avg_excess_power, 'avg_excess_power_off': avg_excess_power_off})
 
                 # Prevent the appliance from turning on if it already run its maximum daily runtime
                 if inst.appliance_maximum_run_time > 0 and (inst.daily_run_time / 60) > inst.appliance_maximum_run_time:
@@ -398,15 +403,32 @@ class PvExcessControl:
                     log.debug(f'{log_prefix} Appliance is already switched on and has run for {(run_time / 60):.1f} minutes.')
                     if avg_excess_power >= PvExcessControl.min_excess_power and inst.dynamic_current_appliance:
                         # try to increase dynamic current, because excess solar power is available
-                        prev_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
-                        excess_amps = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases) + prev_amps, 1)
-                        amps = max(inst.min_current, min(excess_amps, inst.max_current))
-                        if amps > (prev_amps+0.09):
-                            _set_value(inst.appliance_current_set_entity, amps)
-                            log.info(f'{log_prefix} Setting dynamic current appliance from {prev_amps} to {amps} A per phase.')
-                            diff_power = (amps-prev_amps) * PvExcessControl.grid_voltage * inst.phases
+                        if inst.actual_power is None:
+                            actual_current = round((inst.defined_current * PvExcessControl.grid_voltage * inst.phases) / (
+                                        PvExcessControl.grid_voltage * inst.phases), 1)
+                        else:
+                            actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
+                        prev_set_amps = _get_num_state(inst.appliance_current_set_entity, return_on_error=inst.min_current)
+                        # Diff current has 1A extra, to compensate for rounding and small oscillations
+                        diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
+                        target_current = round(max(inst.min_current, min( actual_current + diff_current, inst.max_current )), 1)
+                        log.debug(f'{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A')
+                        # TODO: minimum current step should be made configurable (e.g. 1A)
+                        # increase current if following conditions are met
+                        # - current has to be increased
+                        # - previously set current was above minimum, alternatively  if appliance can run at min current partially on solar
+                        # - If appliance was not just turned on from 0 in last round (as some chargers take a minute to start charging)
+                        if diff_current > 0.09 \
+                            and prev_set_amps < target_current \
+                            and (prev_set_amps >= inst.min_current or (prev_set_amps < inst.min_current and diff_current > inst.min_solar_percent * inst.min_current ))\
+                            and not (inst.previous_current_buffer == 0 and actual_current > 0 ):
+                            _set_value(inst.appliance_current_set_entity, target_current)
+                            log.info(f'{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase.')
+                            # TODO: should we use previously set current below there?
+                            diff_power = (target_current-actual_current) * PvExcessControl.grid_voltage * inst.phases
                             # "restart" history by subtracting power difference from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -diff_power)
+                        inst.previous_current_buffer = actual_current
 
                 elif not (inst.appliance_once_only and inst.switched_on_today):
                     # check if appliance can be switched on
@@ -443,6 +465,7 @@ class PvExcessControl:
             for dic in instances:
                 inst = dic['instance']
                 avg_excess_power = dic['avg_excess_power'] + prev_consumption_sum
+                avg_excess_power_off = dic['avg_excess_power_off'] + prev_consumption_sum
                 log_prefix = f'[{inst.appliance_switch} (Prio {inst.appliance_priority})]'
 
                 # -------------------------------------------------------------------
@@ -493,10 +516,14 @@ class PvExcessControl:
                                         PvExcessControl.grid_voltage * inst.phases), 1)
                             else:
                                 actual_current = round(_get_num_state(inst.actual_power) / (PvExcessControl.grid_voltage * inst.phases), 1)
-                            diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)
+                            # diff_current is used to eventually lower current every interval
+                            # diff_current_off is evaluated over the switch off interval and it is therefore used to turn off appliance 
+                            diff_current = round(avg_excess_power / (PvExcessControl.grid_voltage * inst.phases), 1)+1
+                            diff_current_off = round(avg_excess_power_off / (PvExcessControl.grid_voltage * inst.phases), 1)+1
+                            # Round up by 1A to compensate for oscillations
                             target_current = round(max(inst.min_current, actual_current + diff_current), 1)
-                            log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {target_current=}A')
-                            if inst.min_current < target_current < actual_current:
+                            log.debug(f'{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A')
+                            if inst.min_current <= target_current < actual_current:
                                 # current can be reduced
                                 log.info(f'{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A.')
                                 _set_value(inst.appliance_current_set_entity, target_current)
@@ -508,13 +535,18 @@ class PvExcessControl:
                                 # "restart" history by adding defined power to each history value within the specified time frame
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
-                                # current cannot be reduced
-                                # turn off appliance
-                                power_consumption = self.switch_off(inst)
-                                if power_consumption != 0:
-                                    prev_consumption_sum += power_consumption
-                                    log.debug(f'{log_prefix} Added {power_consumption=} W to prev_consumption_sum, '
-                                              f'which is now {prev_consumption_sum} W.')
+                                if diff_current_off > - inst.min_current * inst.min_solar_percent:
+                                    log.debug(f'{log_prefix} leaving dynamic appliance on at minimum current on at least {inst.min_solar_percent} solar')
+                                else: 
+                                    # current cannot be reduced
+                                    # Set current to 0 and turn off appliance
+                                    _set_value(inst.appliance_current_set_entity, 0)
+                                    inst.previous_current_buffer = 0
+                                    power_consumption = self.switch_off(inst)
+                                    if power_consumption != 0:
+                                        prev_consumption_sum += power_consumption
+                                        log.debug(f'{log_prefix} Added {power_consumption=} W to prev_consumption_sum, '
+                                                f'which is now {prev_consumption_sum} W.')
 
                         else:
                             # Try to switch off appliance
