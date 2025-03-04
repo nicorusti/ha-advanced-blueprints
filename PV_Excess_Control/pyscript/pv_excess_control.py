@@ -840,11 +840,16 @@ class PvExcessControl:
                                 + 1
                             )
                             # Round up by 1A to compensate for oscillations
-                            target_current = round(
-                                max(inst.min_current, actual_current + diff_current), 1
-                            )
+                            if inst.round_target_current:
+                                target_current = round(
+                                    max(inst.min_current, actual_current + diff_current), 0
+                                )
+                            else.
+                                target_current = round(
+                                    max(inst.min_current, actual_current + diff_current), 1
+                                )
                             log.debug(
-                                f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A"
+                                f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | {inst.round_target_current}"
                             )
                             if inst.min_current <= target_current < actual_current:
                                 # current can be reduced
