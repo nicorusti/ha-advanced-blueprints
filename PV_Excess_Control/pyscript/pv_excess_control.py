@@ -234,6 +234,7 @@ def pv_excess_control(
     home_battery_level,
     min_home_battery_level,
     dynamic_current_appliance,
+    round_target_current,
     appliance_phases,
     min_current,
     max_current,
@@ -271,6 +272,7 @@ def pv_excess_control(
         home_battery_level,
         min_home_battery_level,
         dynamic_current_appliance,
+        round_target_current,
         appliance_phases,
         min_current,
         max_current,
@@ -334,6 +336,7 @@ class PvExcessControl:
         home_battery_level,
         min_home_battery_level,
         dynamic_current_appliance,
+        round_target_current,
         appliance_phases,
         min_current,
         max_current,
@@ -373,6 +376,7 @@ class PvExcessControl:
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
 
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
+        inst.round_target_current = bool(round_target_current)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
@@ -605,15 +609,24 @@ class PvExcessControl:
                             )
                             + 1
                         )
-                        target_current = round(
-                            max(
-                                inst.min_current,
-                                min(actual_current + diff_current, inst.max_current),
-                            ),
-                            1,
-                        )
+                        if inst.round_target_current:
+                            target_current = round(
+                                max(
+                                    inst.min_current,
+                                    min(actual_current + diff_current, inst.max_current),
+                                ),
+                                0,
+                            )
+                        else:
+                            target_current = round(
+                                max(
+                                    inst.min_current,
+                                    min(actual_current + diff_current, inst.max_current),
+                                ),
+                                1,
+                            )
                         log.debug(
-                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A"
+                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | {inst.round_target_current}"
                         )
                         # TODO: minimum current step should be made configurable (e.g. 1A)
                         # increase current if following conditions are met
