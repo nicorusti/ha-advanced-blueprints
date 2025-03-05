@@ -176,6 +176,14 @@ blueprint:
           domain: sensor
           multiple: false
 
+    home_battery_level_min:
+      name: "Only-On-Appliance"
+      description: >
+        Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediciton.
+      default: False
+      selector:
+        boolean:
+
     min_home_battery_level:
       name: "Minimum home battery level (end of day)"
       description: >
