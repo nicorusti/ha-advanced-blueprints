@@ -372,12 +372,14 @@ blueprint:
       default: False
       selector:
         boolean:
+
     round_target_current:
       name: "Round target current"
-      description: "Tick this box if your appliance only supports integer currents."
+      description: "Tick this box if your appliance only supports integer taregt currents. Will round to full integers."
       default: False
       selector:
         boolean:
+        
     appliance_current_set_entity:
       name: "Appliance SetCurrent entity"
       description: >

@@ -626,7 +626,7 @@ class PvExcessControl:
                                 1,
                             )
                         log.debug(
-                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | {inst.round_target_current}"
+                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current}"
                         )
                         # TODO: minimum current step should be made configurable (e.g. 1A)
                         # increase current if following conditions are met
@@ -844,12 +844,12 @@ class PvExcessControl:
                                 target_current = round(
                                     max(inst.min_current, actual_current + diff_current), 0
                                 )
-                            else.
+                            else:
                                 target_current = round(
                                     max(inst.min_current, actual_current + diff_current), 1
                                 )
                             log.debug(
-                                f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | {inst.round_target_current}"
+                                f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
                             )
                             if inst.min_current <= target_current < actual_current:
                                 # current can be reduced
