@@ -177,9 +177,16 @@ blueprint:
           multiple: false
 
     home_battery_level_min:
-      name: "Only-On-Appliance"
+      name: "Minimum home battery level (to start)"
       description: >
+        Minimum desired power level (in percent) of your home battery (end of day).
+        
         Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediciton.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+        
       default: False
       selector:
         boolean:
