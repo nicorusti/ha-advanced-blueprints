@@ -193,7 +193,6 @@ blueprint:
 
         - *If you also specify **solar production forecast***, the script will optimize your PV excess consumption right away and ensure that the specified *minimum home battery level* is reached at the **end of the day**.
 
-        - *If you **do not** specify solar production forecast*, the home battery will be charged to the specified level *before* switching on appliances.
       default: 100
       selector:
         number:
@@ -212,6 +211,11 @@ blueprint:
         **[WARNING]**
 
         - **This sensor must be the same for all your created automations based on this blueprint!**
+
+
+        **[NOTE]**
+
+        - *The home battery will be charged to the specified level *before* switching on appliances or to consider solar production forecast.
         
       default: False
       selector:
