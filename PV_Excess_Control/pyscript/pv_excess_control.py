@@ -269,8 +269,8 @@ class PvExcessControl:
         PvExcessControl.solar_production_forecast = solar_production_forecast
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
-
-        inst.home_battery_level_min = bool(home_battery_level_min)
+        PvExcessControl.home_battery_level_min = bool(home_battery_level_min)
+                     
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
@@ -366,12 +366,12 @@ class PvExcessControl:
                     home_battery_level = 100
                 else:
                     home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
-                if home_battery_level >= PvExcessControl.min_home_battery_level and inst.home_battery_level_min:
+                if home_battery_level >= PvExcessControl.min_home_battery_level and PvExcessControl.home_battery_level_min:
                     # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
                     # calc avg based on pv excess (solar power - load power) according to specified window
                     avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
                     log.debug(f'{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)'
-                              f' AND {inst.home_battery_level_min} is on. '
+                              f' AND {PvExcessControl.home_battery_level_min} is on. '
                               f'Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W')
                 
                 elif home_battery_level >= PvExcessControl.min_home_battery_level or not self._force_charge_battery():
