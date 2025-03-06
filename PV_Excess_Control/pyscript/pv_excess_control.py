@@ -684,11 +684,11 @@ class PvExcessControl:
                         avg_excess_power >= defined_power
                         or (inst.appliance_priority > 1000 and avg_excess_power > 0)
                         or self._force_minimum_runtime(
-                            inst, (inst.daily_run_time / 60), avg_excess_power )
-                        or (avg_excess_power >= int(defined_power * inst.min_solar_percent) and inst.dynamic_current_appliance)
+                            inst, (inst.daily_run_time / 60), avg_excess_power 
+                        )
                     ):
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet."
                         )
                         if (
                             inst.switch_interval_counter
@@ -711,7 +711,7 @@ class PvExcessControl:
                             )
                     else:
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet."
                         )
                 # -------------------------------------------------------------------
 

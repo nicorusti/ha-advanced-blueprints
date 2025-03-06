@@ -375,7 +375,7 @@ blueprint:
 
     round_target_current:
       name: "Round target current"
-      description: "Tick this box if your appliance only supports integer taregt currents. Will round to full integers."
+      description: "Tick this box if your appliance only supports integer target currents. Will round to full integers."
       default: False
       selector:
         boolean:
@@ -435,7 +435,7 @@ blueprint:
           step: 0.1
           unit_of_measurement: A
     min_solar_percent:
-      name: "Minimum solar power percentage (to keep running)"
+      name: "Minimum solar power percentage"
       description: >
         Minimum percentage of solar power to run the appliance. E.g. if you configure it to 40%, your appliance will be on as long as 40% of the power comes from solar. This is useful to keep running the appliance even at times of low production, like sunset or sunrise, or in case you have a PV that is not sufficient to fully power the appliance.
 
