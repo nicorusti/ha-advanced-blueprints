@@ -239,6 +239,7 @@ def pv_excess_control(
     min_current,
     max_current,
     min_solar_percent,
+    min_solar_percent_start,
     appliance_switch,
     appliance_switch_interval,
     appliance_switch_off_interval,
@@ -277,6 +278,7 @@ def pv_excess_control(
         min_current,
         max_current,
         min_solar_percent,
+        min_solar_percent_start,
         appliance_switch,
         appliance_switch_interval,
         appliance_switch_off_interval,
@@ -341,6 +343,7 @@ class PvExcessControl:
         min_current,
         max_current,
         min_solar_percent,
+        min_solar_percent_start,
         appliance_switch,
         appliance_switch_interval,
         appliance_switch_off_interval,
@@ -393,6 +396,7 @@ class PvExcessControl:
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
         inst.min_solar_percent = min_solar_percent / 100
+        inst.min_solar_percent_start = min_solar_percent_start / 100
 
         inst.phases = appliance_phases
 
@@ -684,11 +688,11 @@ class PvExcessControl:
                         avg_excess_power >= defined_power
                         or (inst.appliance_priority > 1000 and avg_excess_power > 0)
                         or self._force_minimum_runtime(
-                            inst, (inst.daily_run_time / 60), avg_excess_power
-                        )
+                            inst, (inst.daily_run_time / 60), avg_excess_power )
+                        or (avg_excess_power >= defined_power * inst.min_solar_percent_start and inst.dynamic_current_appliance)
                     ):
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance or appliance has high priority or it didn't meet minimum runtime yet."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent_start}."
                         )
                         if (
                             inst.switch_interval_counter
@@ -711,7 +715,7 @@ class PvExcessControl:
                             )
                     else:
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent_start}."
                         )
                 # -------------------------------------------------------------------
 
