@@ -742,13 +742,6 @@ class PvExcessControl:
                             allowed_excess_power_consumption = _get_num_state(
                                 inst.actual_power
                             )
-                    elif inst.dynamic_current_appliance:
-                        allowed_excess_power_consumption = (
-                            inst.defined_current
-                            * PvExcessControl.grid_voltage
-                            * inst.phases
-                            * (1 - inst.min_solar_percent)
-                        )
                     else:
                         allowed_excess_power_consumption = 0
 
