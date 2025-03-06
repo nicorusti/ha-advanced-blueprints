@@ -451,23 +451,6 @@ blueprint:
           max: 100
           step: 1
           unit_of_measurement: "%"
-    min_solar_percent_start:
-      name: "Minimum solar power percentage (to start)"
-      description: >
-        Minimum percentage of solar power to run the appliance. E.g. if you configure it to 40%, your appliance will be on as long as 40% of the power comes from solar. This is useful to keep running the appliance even at times of low production, like sunset or sunrise, or in case you have a PV that is not sufficient to fully power the appliance.
-
-
-        **[NOTE]**
-
-        - **Currently only works with dynamic current appliances! It therefore runs the dynamic current appliance at minimum current as long as it can be partially run on solar.**
-
-      default: 100
-      selector:
-        number:
-          min: 1
-          max: 100
-          step: 1
-          unit_of_measurement: "%"
     appliance_phases:
       name: "Appliance Phases"
       description: >
@@ -537,7 +520,6 @@ action:
       min_current: !input min_current
       max_current: !input max_current
       min_solar_percent: !input min_solar_percent
-      min_solar_percent_start: !input min_solar_percent_start
       appliance_switch: !input appliance_switch
       appliance_switch_interval: !input appliance_switch_interval
       appliance_switch_off_interval: !input appliance_switch_off_interval

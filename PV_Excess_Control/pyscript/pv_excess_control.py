@@ -239,7 +239,6 @@ def pv_excess_control(
     min_current,
     max_current,
     min_solar_percent,
-    min_solar_percent_start,
     appliance_switch,
     appliance_switch_interval,
     appliance_switch_off_interval,
@@ -278,7 +277,6 @@ def pv_excess_control(
         min_current,
         max_current,
         min_solar_percent,
-        min_solar_percent_start,
         appliance_switch,
         appliance_switch_interval,
         appliance_switch_off_interval,
@@ -343,7 +341,6 @@ class PvExcessControl:
         min_current,
         max_current,
         min_solar_percent,
-        min_solar_percent_start,
         appliance_switch,
         appliance_switch_interval,
         appliance_switch_off_interval,
@@ -396,8 +393,7 @@ class PvExcessControl:
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
         inst.min_solar_percent = min_solar_percent / 100
-        inst.min_solar_percent_start = min_solar_percent_start / 100
-
+        
         inst.phases = appliance_phases
 
         inst.log_prefix = f"[{inst.appliance_switch} {inst.automation_id} (Prio {inst.appliance_priority})]"
@@ -689,10 +685,10 @@ class PvExcessControl:
                         or (inst.appliance_priority > 1000 and avg_excess_power > 0)
                         or self._force_minimum_runtime(
                             inst, (inst.daily_run_time / 60), avg_excess_power )
-                        or (avg_excess_power >= defined_power * inst.min_solar_percent_start and inst.dynamic_current_appliance)
+                        or (avg_excess_power >= defined_power * inst.min_solar_percent and inst.dynamic_current_appliance)
                     ):
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent_start}."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                         if (
                             inst.switch_interval_counter
@@ -715,7 +711,7 @@ class PvExcessControl:
                             )
                     else:
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent_start}."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                 # -------------------------------------------------------------------
 
@@ -746,6 +742,13 @@ class PvExcessControl:
                             allowed_excess_power_consumption = _get_num_state(
                                 inst.actual_power
                             )
+                    elif inst.dynamic_current_appliance:
+                        allowed_excess_power_consumption = (
+                            inst.defined_current
+                            * PvExcessControl.grid_voltage
+                            * inst.phases
+                            * (1 - inst.min_solar_percent)
+                        )
                     else:
                         allowed_excess_power_consumption = 0
 
