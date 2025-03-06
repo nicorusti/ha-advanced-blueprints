@@ -491,6 +491,7 @@ action:
       load_power: !input load_power
       home_battery_level: !input home_battery_level
       min_home_battery_level: !input min_home_battery_level
+      min_home_battery_level_start: !input min_home_battery_level_start
       dynamic_current_appliance: !input dynamic_current_appliance
       appliance_phases: !input appliance_phases
       min_current: !input min_current
