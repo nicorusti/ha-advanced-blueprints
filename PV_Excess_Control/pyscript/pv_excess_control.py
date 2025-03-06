@@ -393,7 +393,7 @@ class PvExcessControl:
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
         inst.min_solar_percent = min_solar_percent / 100
-        
+
         inst.phases = appliance_phases
 
         inst.log_prefix = f"[{inst.appliance_switch} {inst.automation_id} (Prio {inst.appliance_priority})]"
@@ -684,7 +684,7 @@ class PvExcessControl:
                         avg_excess_power >= defined_power
                         or (inst.appliance_priority > 1000 and avg_excess_power > 0)
                         or self._force_minimum_runtime(
-                            inst, (inst.daily_run_time / 60), avg_excess_power 
+                            inst, (inst.daily_run_time / 60), avg_excess_power
                         )
                     ):
                         log.debug(
