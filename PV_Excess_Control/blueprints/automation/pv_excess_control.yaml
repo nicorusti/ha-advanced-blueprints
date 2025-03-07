@@ -379,7 +379,7 @@ blueprint:
       default: False
       selector:
         boolean:
-        
+
     appliance_current_set_entity:
       name: "Appliance SetCurrent entity"
       description: >
