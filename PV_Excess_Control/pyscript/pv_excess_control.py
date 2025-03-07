@@ -867,7 +867,7 @@ class PvExcessControl:
                                 target_current = round(
                                     max(
                                         inst.min_current, actual_current + diff_current
-                                    ,
+                                    ),
                                     1
                                 )
                             log.debug(
