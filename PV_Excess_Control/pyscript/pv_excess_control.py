@@ -686,9 +686,11 @@ class PvExcessControl:
                         or self._force_minimum_runtime(
                             inst, (inst.daily_run_time / 60), avg_excess_power
                         )
+                        or (avg_excess_power >= int(defined_power * inst.min_solar_percent) and inst.dynamic_current_appliance
+                        )
                     ):
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                         if (
                             inst.switch_interval_counter
@@ -711,7 +713,7 @@ class PvExcessControl:
                             )
                     else:
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet."
+                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                 # -------------------------------------------------------------------
 
@@ -742,6 +744,13 @@ class PvExcessControl:
                             allowed_excess_power_consumption = _get_num_state(
                                 inst.actual_power
                             )
+                    elif inst.dynamic_current_appliance:
+                        allowed_excess_power_consumption = (
+                            inst.defined_current
+                            * PvExcessControl.grid_voltage
+                            * inst.phases
+                            * (1 - inst.min_solar_percent)
+                        )
                     else:
                         allowed_excess_power_consumption = 0
 
@@ -1133,7 +1142,7 @@ class PvExcessControl:
         Calculates if the remaining solar power forecast is enough to ensure the specified min. home battery level is reached at the end
         of the day.
         :param kwh_offset:  Offset in kWh, which will be added to the calculated remaining battery capacity to ensure an earlier
-                             triggering of a force charge
+                            triggering of a force charge
         :return:            True if force charge is necessary, False otherwise
         """
         if PvExcessControl.home_battery_level is None:
