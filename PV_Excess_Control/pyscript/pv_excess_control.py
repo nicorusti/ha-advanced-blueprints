@@ -613,7 +613,9 @@ class PvExcessControl:
                             target_current = round(
                                 max(
                                     inst.min_current,
-                                    min(actual_current + diff_current, inst.max_current),
+                                    min(
+                                        actual_current + diff_current, inst.max_current
+                                    ),
                                 ),
                                 0,
                             )
@@ -621,7 +623,9 @@ class PvExcessControl:
                             target_current = round(
                                 max(
                                     inst.min_current,
-                                    min(actual_current + diff_current, inst.max_current),
+                                    min(
+                                        actual_current + diff_current, inst.max_current
+                                    ),
                                 ),
                                 1,
                             )
@@ -686,7 +690,10 @@ class PvExcessControl:
                         or self._force_minimum_runtime(
                             inst, (inst.daily_run_time / 60), avg_excess_power
                         )
-                        or (avg_excess_power >= int(defined_power * inst.min_solar_percent) and inst.dynamic_current_appliance
+                        or (
+                            avg_excess_power 
+                            >= int(defined_power * inst.min_solar_percent)
+                            and inst.dynamic_current_appliance
                         )
                     ):
                         log.debug(
@@ -851,11 +858,17 @@ class PvExcessControl:
                             # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
                                 target_current = round(
-                                    max(inst.min_current, actual_current + diff_current), 0
+                                    max(
+                                        inst.min_current, actual_current + diff_current
+                                    ),
+                                    0
                                 )
                             else:
                                 target_current = round(
-                                    max(inst.min_current, actual_current + diff_current), 1
+                                    max(
+                                        inst.min_current, actual_current + diff_current
+                                    ,
+                                    1
                                 )
                             log.debug(
                                 f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
