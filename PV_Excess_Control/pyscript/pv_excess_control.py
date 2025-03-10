@@ -846,7 +846,7 @@ class PvExcessControl:
                                     1,
                                 )
                                 + 1,
-                                1.
+                                1,
                             )
                             diff_current_off = round(
                                 round(
@@ -855,7 +855,7 @@ class PvExcessControl:
                                     1,
                                 )
                                 + 1,
-                                1.
+                                1,
                             )
                             # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
