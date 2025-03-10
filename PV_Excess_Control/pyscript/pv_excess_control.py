@@ -839,21 +839,23 @@ class PvExcessControl:
                                 )
                             # diff_current is used to eventually lower current every interval
                             # diff_current_off is evaluated over the switch off interval and it is therefore used to turn off appliance
-                            diff_current = (
+                            diff_current = round(
                                 round(
                                     avg_excess_power
                                     / (PvExcessControl.grid_voltage * inst.phases),
                                     1,
                                 )
-                                + 1
+                                + 1,
+                                1.
                             )
-                            diff_current_off = (
+                            diff_current_off = round(
                                 round(
                                     avg_excess_power_off
                                     / (PvExcessControl.grid_voltage * inst.phases),
                                     1,
                                 )
-                                + 1
+                                + 1,
+                                1.
                             )
                             # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
