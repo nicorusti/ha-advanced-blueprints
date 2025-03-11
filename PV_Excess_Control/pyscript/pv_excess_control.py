@@ -200,7 +200,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
                       max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
-                      appliance_minimum_run_time, appliance_runtime_deadline):
+                      appliance_minimum_run_time, appliance_runtime_deadline, enabled):
 
     automation_id = automation_id[11:] if automation_id[:11] == 'automation.' else automation_id
     automation_id = _replace_vowels(f"automation.{automation_id.strip().replace(' ', '_').lower()}")
@@ -212,7 +212,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
                     max_current, appliance_switch, appliance_switch_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
                     grid_voltage, import_export_power, home_battery_capacity, solar_production_forecast, time_of_sunset,
-                    appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time, appliance_runtime_deadline)
+                    appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time, appliance_runtime_deadline, enabled)
 
 
 
@@ -247,12 +247,13 @@ class PvExcessControl:
     on_time_counter = 0
 
 
+
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                  min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
-                 appliance_minimum_run_time, appliance_runtime_deadline):
+                 appliance_minimum_run_time, appliance_runtime_deadline, enabled):
         if automation_id not in PvExcessControl.instances:
             inst = self
         else:
@@ -284,6 +285,7 @@ class PvExcessControl:
         inst.appliance_minimum_run_time = appliance_minimum_run_time
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
+        inst.enabled = enabled
 
         inst.phases = appliance_phases
 
@@ -341,7 +343,7 @@ class PvExcessControl:
                 # and forces the appliance on no matter what until minimum runtime is met 
                 if inst.enforce_minimum_run:
                     # If we aren't on, then turn on
-                    if _get_state(inst.appliance_switch) != 'on':
+                    if _get_state(inst.appliance_switch) != 'on' and _get_state(inst.enabled) != 'off':
                         self.switch_on(inst)
                         log.info(f'{inst.log_prefix} Switched on appliance to meet minimum runtime.')
 
@@ -419,8 +421,8 @@ class PvExcessControl:
                     #   or if the appliance should be turned anyways to meet appliance_minimum_run_time
                     defined_power = inst.defined_current * PvExcessControl.grid_voltage * inst.phases
                     if avg_excess_power >= defined_power or (inst.appliance_priority > 1000 and avg_excess_power > 0) or self._force_minimum_runtime(inst, (inst.daily_run_time / 60), avg_excess_power):
-                        log.debug(f'{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance or appliance has high priority or it didn\'t meet minimum runtime yet.')
-                        if inst.switch_interval_counter >= inst.appliance_switch_interval:
+                        log.debug(f'{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance or appliance has high priority or it didn\'t meet minimum runtime yet and it is enabled')
+                        if inst.switch_interval_counter >= inst.appliance_switch_interval and _get_state(inst.enabled) != 'off':
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
                             log.info(f'{log_prefix} Switched on appliance.')
