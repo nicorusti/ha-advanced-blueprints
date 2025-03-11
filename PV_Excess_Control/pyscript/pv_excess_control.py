@@ -691,7 +691,7 @@ class PvExcessControl:
                             inst, (inst.daily_run_time / 60), avg_excess_power
                         )
                         or (
-                            avg_excess_power 
+                            avg_excess_power
                             >= int(defined_power * inst.min_solar_percent)
                             and inst.dynamic_current_appliance
                         )
@@ -751,13 +751,13 @@ class PvExcessControl:
                             allowed_excess_power_consumption = _get_num_state(
                                 inst.actual_power
                             )
-                    #07.03.2025elif inst.dynamic_current_appliance:
+                    # 07.03.2025elif inst.dynamic_current_appliance:
                     #    allowed_excess_power_consumption = (
                     #        inst.defined_current
                     #        * PvExcessControl.grid_voltage
                     #        * inst.phases
                     #        * (1 - inst.min_solar_percent)
-                    #07.03.2025    )
+                    # 07.03.2025    )
                     else:
                         allowed_excess_power_consumption = 0
 
@@ -863,7 +863,6 @@ class PvExcessControl:
                                     max(
                                         inst.min_current, actual_current + diff_current
                                     ),
-
                                     0,
                                 )
                             else:
@@ -908,14 +907,17 @@ class PvExcessControl:
                                 else:
                                     # current cannot be reduced
                                     # Set current to 0 and turn off appliance
-                                    #07.03.2025 KEBA kann nicht auf 0 setzen:
+                                    # 07.03.2025 KEBA kann nicht auf 0 setzen:
                                     log.debug(
                                         f"{log_prefix} switching dynamic appliance off min_current: {inst.min_current} min_solar_percent: {inst.min_solar_percent} diff_current_off: {diff_current_off}"
                                     )
-                                    #homeassistant.exceptions.ServiceValidationError: Value 0.0 for number.keba_p30_keba_p30_charging_current is outside valid range 6 - 10.0
+                                    # homeassistant.exceptions.ServiceValidationError: Value 0.0 for number.keba_p30_keba_p30_charging_current is outside valid range 6 - 10.0
                                     # _set_value(inst.appliance_current_set_entity, 0)
-                                    _set_value(inst.appliance_current_set_entity, inst.min_current)
-                                    #07.03.2025
+                                    _set_value(
+                                        inst.appliance_current_set_entity,
+                                        inst.min_current,
+                                    )
+                                    # 07.03.2025
                                     inst.previous_current_buffer = 0
                                     power_consumption = self.switch_off(inst)
                                     if power_consumption != 0:
