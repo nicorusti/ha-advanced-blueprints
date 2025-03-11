@@ -751,13 +751,13 @@ class PvExcessControl:
                             allowed_excess_power_consumption = _get_num_state(
                                 inst.actual_power
                             )
-                    elif inst.dynamic_current_appliance:
-                        allowed_excess_power_consumption = (
-                            inst.defined_current
-                            * PvExcessControl.grid_voltage
-                            * inst.phases
-                            * (1 - inst.min_solar_percent)
-                        )
+                    #07.03.2025elif inst.dynamic_current_appliance:
+                    #    allowed_excess_power_consumption = (
+                    #        inst.defined_current
+                    #        * PvExcessControl.grid_voltage
+                    #        * inst.phases
+                    #        * (1 - inst.min_solar_percent)
+                    #07.03.2025    )
                     else:
                         allowed_excess_power_consumption = 0
 
@@ -839,21 +839,23 @@ class PvExcessControl:
                                 )
                             # diff_current is used to eventually lower current every interval
                             # diff_current_off is evaluated over the switch off interval and it is therefore used to turn off appliance
-                            diff_current = (
+                            diff_current = round(
                                 round(
                                     avg_excess_power
                                     / (PvExcessControl.grid_voltage * inst.phases),
                                     1,
                                 )
-                                + 1
+                                + 1,
+                                1,
                             )
-                            diff_current_off = (
+                            diff_current_off = round(
                                 round(
                                     avg_excess_power_off
                                     / (PvExcessControl.grid_voltage * inst.phases),
                                     1,
                                 )
-                                + 1
+                                + 1,
+                                1,
                             )
                             # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
@@ -867,7 +869,7 @@ class PvExcessControl:
                                 target_current = round(
                                     max(
                                         inst.min_current, actual_current + diff_current
-                                    ,
+                                    ),
                                     1
                                 )
                             log.debug(
@@ -900,12 +902,19 @@ class PvExcessControl:
                                     > -inst.min_current * inst.min_solar_percent
                                 ):
                                     log.debug(
-                                        f"{log_prefix} leaving dynamic appliance on at minimum current on at least {inst.min_solar_percent} solar"
+                                        f"{log_prefix} leaving dynamic appliance on at minimum current {inst.min_current} on at least {inst.min_solar_percent} solar - diff_current_off {diff_current_off}"
                                     )
                                 else:
                                     # current cannot be reduced
                                     # Set current to 0 and turn off appliance
-                                    _set_value(inst.appliance_current_set_entity, 0)
+                                    #07.03.2025 KEBA kann nicht auf 0 setzen:
+                                    log.debug(
+                                        f"{log_prefix} switching dynamic appliance off min_current: {inst.min_current} min_solar_percent: {inst.min_solar_percent} diff_current_off: {diff_current_off}"
+                                    )
+                                    #homeassistant.exceptions.ServiceValidationError: Value 0.0 for number.keba_p30_keba_p30_charging_current is outside valid range 6 - 10.0
+                                    # _set_value(inst.appliance_current_set_entity, 0)
+                                    _set_value(inst.appliance_current_set_entity, inst.min_current)
+                                    #07.03.2025
                                     inst.previous_current_buffer = 0
                                     power_consumption = self.switch_off(inst)
                                     if power_consumption != 0:
@@ -914,7 +923,6 @@ class PvExcessControl:
                                             f"{log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
                                             f"which is now {prev_consumption_sum} W."
                                         )
-
                         else:
                             # Try to switch off appliance
                             power_consumption = self.switch_off(inst)
@@ -1066,7 +1074,7 @@ class PvExcessControl:
         Switches an appliance off, if possible.
         :param inst:        PVExcesscontrol Class instance
         :return:            Power consumption relief achieved through switching the appliance off (will be 0 if appliance could
-                             not be switched off)
+                            not be switched off)
         """
         # Check if automation is activated for specific instance
         if not self.automation_activated(inst.automation_id):
