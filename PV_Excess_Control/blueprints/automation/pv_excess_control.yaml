@@ -472,6 +472,17 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
+    enabled:
+      name: "Enable Device Switch"
+      description: >
+        Optional switch/boolean which Enables/Disables the Device.
+      default:
+      selector:
+        entity:
+          domain:
+            - input_boolean
+            - switch
+          multiple: false
 
 
 
@@ -511,3 +522,4 @@ action:
       appliance_maximum_run_time: !input appliance_maximum_run_time
       appliance_minimum_run_time: !input appliance_minimum_run_time
       appliance_runtime_deadline: !input appliance_runtime_deadline
+      enabled: !input enabled
