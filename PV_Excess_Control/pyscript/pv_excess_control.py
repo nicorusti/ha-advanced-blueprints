@@ -867,14 +867,14 @@ class PvExcessControl:
                                     max(
                                         inst.min_current, actual_current + diff_current
                                     ),
-                                    0
+                                    0,
                                 )
                             else:
                                 target_current = round(
                                     max(
                                         inst.min_current, actual_current + diff_current
                                     ),
-                                    1
+                                    1,
                                 )
                             log.debug(
                                 f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
