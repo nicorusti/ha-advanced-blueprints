@@ -196,7 +196,7 @@ def enforce_runtime():
 
 @service
 def pv_excess_control(automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                      min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
+                      min_home_battery_level, min_home_battery_level_start, dynamic_current_appliance, appliance_phases, min_current,
                       max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -207,7 +207,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
 
 
     PvExcessControl(automation_id, appliance_priority, export_power, pv_power,
-                    load_power, home_battery_level, min_home_battery_level,
+                    load_power, home_battery_level, min_home_battery_level, min_home_battery_level_start,
                     dynamic_current_appliance, appliance_phases, min_current,
                     max_current, appliance_switch, appliance_switch_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
@@ -248,7 +248,7 @@ class PvExcessControl:
 
 
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                 min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
+                 min_home_battery_level, min_home_battery_level_start, dynamic_current_appliance, appliance_phases, min_current,
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -269,7 +269,8 @@ class PvExcessControl:
         PvExcessControl.solar_production_forecast = solar_production_forecast
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
-
+        PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
+                     
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
@@ -366,7 +367,15 @@ class PvExcessControl:
                     home_battery_level = 100
                 else:
                     home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
-                if home_battery_level >= PvExcessControl.min_home_battery_level or not self._force_charge_battery():
+                if home_battery_level >= PvExcessControl.min_home_battery_level and PvExcessControl.min_home_battery_level_start:
+                    # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
+                    # calc avg based on pv excess (solar power - load power) according to specified window
+                    avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
+                    log.debug(f'{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)'
+                              f' AND {PvExcessControl.min_home_battery_level_start} is on. '
+                              f'Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W')
+                
+                elif home_battery_level >= PvExcessControl.min_home_battery_level or not self._force_charge_battery():
                     # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
                     # calc avg based on pv excess (solar power - load power) according to specified window
                     avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
@@ -676,7 +685,7 @@ class PvExcessControl:
             log.info(f'Automation "{a_id}" was deleted. Removing related class instance.')
             del PvExcessControl.instances[a_id]
             return False
-        elif automation_state == 'on' and _get_state(s_enabled) == 'off':
+        elif automation_state == 'on' and s_enabled and _get_state(s_enabled) == 'off':
             log.debug(f'Doing nothing, because automation is actived but optional switch is off.')
             return False
         return True
