@@ -916,15 +916,12 @@ class PvExcessControl:
                                     )
                                     # Some wallboxes may need to set current to 0 for deactivating
                                     if inst.deactivating_current:
-                                        _set_value(
-                                            inst.appliance_current_set_entity, 
-                                            0
-                                        )
+                                        _set_value(inst.appliance_current_set_entity, 0)
                                     # homeassistant.exceptions.ServiceValidationError: Value 0.0 for number.keba_p30_keba_p30_charging_current is outside valid range 6 - 10.0
                                     else:
                                         _set_value(
-                                            inst.appliance_current_set_entity, 
-                                            inst.min_current
+                                            inst.appliance_current_set_entity,
+                                            inst.min_current,
                                         )
                                     inst.previous_current_buffer = 0
                                     power_consumption = self.switch_off(inst)

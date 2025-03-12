@@ -379,7 +379,7 @@ blueprint:
       default: False
       selector:
         boolean:
-    
+
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
       description: "Tick this box if your wallbox needs to be set to current 0 for deactivating else min_current is used."
