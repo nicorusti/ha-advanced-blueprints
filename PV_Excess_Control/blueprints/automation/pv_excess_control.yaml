@@ -193,7 +193,6 @@ blueprint:
 
         - *If you also specify **solar production forecast***, the script will optimize your PV excess consumption right away and ensure that the specified *minimum home battery level* is reached at the **end of the day**.
 
-        - *If you **do not** specify solar production forecast*, the home battery will be charged to the specified level *before* switching on appliances.
       default: 100
       selector:
         number:
@@ -201,6 +200,26 @@ blueprint:
           max: 100
           step: 5
           unit_of_measurement: "%"
+
+    min_home_battery_level_start:
+      name: "Minimum home battery level (to start)"
+      description: >
+        Minimum desired power level (in percent) of your home battery (to start).
+        
+        Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediciton.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+
+
+        **[NOTE]**
+
+        - *The home battery will be charged to the specified level *before* switching on appliances or to consider solar production forecast.
+        
+      default: False
+      selector:
+        boolean:
 
     home_battery_capacity:
       name: "Home battery capacity"
@@ -502,6 +521,17 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
+    enabled:
+      name: "Enable Device Switch"
+      description: >
+        Optional switch/boolean which Enables/Disables the Device.
+      default:
+      selector:
+        entity:
+          domain:
+            - input_boolean
+            - switch
+          multiple: false
 
 
 
@@ -521,6 +551,7 @@ action:
       load_power: !input load_power
       home_battery_level: !input home_battery_level
       min_home_battery_level: !input min_home_battery_level
+      min_home_battery_level_start: !input min_home_battery_level_start
       dynamic_current_appliance: !input dynamic_current_appliance
       round_target_current: !input round_target_current
       deactivating_current: !input deactivating_current
@@ -544,3 +575,4 @@ action:
       appliance_maximum_run_time: !input appliance_maximum_run_time
       appliance_minimum_run_time: !input appliance_minimum_run_time
       appliance_runtime_deadline: !input appliance_runtime_deadline
+      enabled: !input enabled

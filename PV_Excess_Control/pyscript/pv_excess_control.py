@@ -256,6 +256,7 @@ def pv_excess_control(
     appliance_maximum_run_time,
     appliance_minimum_run_time,
     appliance_runtime_deadline,
+    enabled,
 ):
     automation_id = (
         automation_id[11:] if automation_id[:11] == "automation." else automation_id
@@ -295,6 +296,7 @@ def pv_excess_control(
         appliance_maximum_run_time,
         appliance_minimum_run_time,
         appliance_runtime_deadline,
+        enabled,
     )
 
 
@@ -360,6 +362,7 @@ class PvExcessControl:
         appliance_maximum_run_time,
         appliance_minimum_run_time,
         appliance_runtime_deadline,
+        enabled,
     ):
         if automation_id not in PvExcessControl.instances:
             inst = self
@@ -377,7 +380,8 @@ class PvExcessControl:
         PvExcessControl.solar_production_forecast = solar_production_forecast
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
-
+        PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
+                     
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.round_target_current = bool(round_target_current)
         inst.deactivating_current = bool(deactivating_current)
@@ -397,6 +401,7 @@ class PvExcessControl:
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
         inst.min_solar_percent = min_solar_percent / 100
+        inst.enabled = enabled
 
         inst.phases = appliance_phases
 
@@ -454,7 +459,7 @@ class PvExcessControl:
                 log_prefix = inst.log_prefix
 
                 # Check if automation is activated for specific instance
-                if not self.automation_activated(inst.automation_id):
+                if not self.automation_activated(inst.automation_id,inst.enabled):
                     continue
 
                 # Check if we are enforcing the minimum daily run time
@@ -499,7 +504,15 @@ class PvExcessControl:
                     home_battery_level = _get_num_state(
                         PvExcessControl.home_battery_level
                     )
-                if (
+                if home_battery_level >= PvExcessControl.min_home_battery_level and PvExcessControl.min_home_battery_level_start:
+                    # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
+                    # calc avg based on pv excess (solar power - load power) according to specified window
+                    avg_excess_power = int(sum(PvExcessControl.pv_history[-inst.appliance_switch_interval:]) / max(1,inst.appliance_switch_interval))
+                    log.debug(f'{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)'
+                              f' AND {PvExcessControl.min_home_battery_level_start} is on. '
+                              f'Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W')
+                
+                elif (
                     home_battery_level >= PvExcessControl.min_home_battery_level
                     or not self._force_charge_battery()
                 ):
@@ -1085,7 +1098,7 @@ class PvExcessControl:
                             not be switched off)
         """
         # Check if automation is activated for specific instance
-        if not self.automation_activated(inst.automation_id):
+        if not self.automation_activated(inst.automation_id,inst.enabled):
             return 0
         # Do not turn off only-on-appliances
         if inst.appliance_on_only:
@@ -1127,10 +1140,11 @@ class PvExcessControl:
             self._adjust_pwr_history(inst, power_consumption)
             return power_consumption
 
-    def automation_activated(self, a_id):
+    def automation_activated(self, a_id, s_enabled):
         """
         Checks if the automation for a specific appliance is activated or not.
         :param a_id:    Automation ID in Home Assistant
+        :param s_enabled: Optional Switch for disabling the device
         :return:        True if automation is activated, False otherwise
         """
         automation_state = _get_state(a_id)
@@ -1144,6 +1158,9 @@ class PvExcessControl:
                 f'Automation "{a_id}" was deleted. Removing related class instance.'
             )
             del PvExcessControl.instances[a_id]
+            return False
+        elif automation_state == 'on' and _get_state(s_enabled) == 'off':
+            log.debug(f'Doing nothing, because automation is actived but optional switch is off.')
             return False
         return True
 

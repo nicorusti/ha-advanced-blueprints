@@ -2,9 +2,6 @@
 
 Automatically control your appliances (wallbox, heatpump, washing machine, ...) based on excess solar power.
 
-If you like my work, you can support me here:\
-[<img src="https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png" alt="Buy me a coffee" width="200" />](https://buymeacoffee.com/henrikIC)
-
 ## Features
 
 :white*check_mark: Works with hybrid and standard inverters\
@@ -70,3 +67,6 @@ If you like my work, you can support me here:\
 ### Deletion
 
 - To remove the auto-control of a single appliance, simply delete the related automation.
+
+## Credits
+Originally based and created by https://github.com/InventoCasa/ha-advanced-blueprints
