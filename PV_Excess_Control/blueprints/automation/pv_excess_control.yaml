@@ -379,6 +379,13 @@ blueprint:
       default: False
       selector:
         boolean:
+    
+    deactivating_current:
+      name: "Wallbox Deactivation with current 0?"
+      description: "Tick this box if your wallbox needs to be set to current 0 for deactivating else min_current is used."
+      default: False
+      selector:
+        boolean:
 
     appliance_current_set_entity:
       name: "Appliance SetCurrent entity"
@@ -516,6 +523,7 @@ action:
       min_home_battery_level: !input min_home_battery_level
       dynamic_current_appliance: !input dynamic_current_appliance
       round_target_current: !input round_target_current
+      deactivating_current: !input deactivating_current
       appliance_phases: !input appliance_phases
       min_current: !input min_current
       max_current: !input max_current
