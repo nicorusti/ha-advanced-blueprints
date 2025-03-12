@@ -247,7 +247,6 @@ class PvExcessControl:
     on_time_counter = 0
 
 
-
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
                  min_home_battery_level, dynamic_current_appliance, appliance_phases, min_current,
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
@@ -335,7 +334,7 @@ class PvExcessControl:
                 log_prefix = inst.log_prefix
 
                 # Check if automation is activated for specific instance
-                if not self.automation_activated(inst.automation_id):
+                if not self.automation_activated(inst.automation_id,inst.enabled):
                     continue
 
                 # Check if we are enforcing the minimum daily run time
@@ -343,7 +342,7 @@ class PvExcessControl:
                 # and forces the appliance on no matter what until minimum runtime is met 
                 if inst.enforce_minimum_run:
                     # If we aren't on, then turn on
-                    if _get_state(inst.appliance_switch) != 'on' and _get_state(inst.enabled) != 'off':
+                    if _get_state(inst.appliance_switch) != 'on':
                         self.switch_on(inst)
                         log.info(f'{inst.log_prefix} Switched on appliance to meet minimum runtime.')
 
@@ -421,8 +420,8 @@ class PvExcessControl:
                     #   or if the appliance should be turned anyways to meet appliance_minimum_run_time
                     defined_power = inst.defined_current * PvExcessControl.grid_voltage * inst.phases
                     if avg_excess_power >= defined_power or (inst.appliance_priority > 1000 and avg_excess_power > 0) or self._force_minimum_runtime(inst, (inst.daily_run_time / 60), avg_excess_power):
-                        log.debug(f'{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance or appliance has high priority or it didn\'t meet minimum runtime yet and it is enabled')
-                        if inst.switch_interval_counter >= inst.appliance_switch_interval and _get_state(inst.enabled) != 'off':
+                        log.debug(f'{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance or appliance has high priority or it didn\'t meet minimum runtime yet.')
+                        if inst.switch_interval_counter >= inst.appliance_switch_interval:
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
                             log.info(f'{log_prefix} Switched on appliance.')
@@ -631,7 +630,7 @@ class PvExcessControl:
                              not be switched off)
         """
         # Check if automation is activated for specific instance
-        if not self.automation_activated(inst.automation_id):
+        if not self.automation_activated(inst.automation_id,inst.enabled):
             return 0
         # Do not turn off only-on-appliances
         if inst.appliance_on_only:
@@ -662,10 +661,11 @@ class PvExcessControl:
             return power_consumption
 
 
-    def automation_activated(self, a_id):
+    def automation_activated(self, a_id, s_enabled):
         """
         Checks if the automation for a specific appliance is activated or not.
         :param a_id:    Automation ID in Home Assistant
+        :param s_enabled: Optional Switch for disabling the device
         :return:        True if automation is activated, False otherwise
         """
         automation_state = _get_state(a_id)
@@ -675,6 +675,9 @@ class PvExcessControl:
         elif automation_state is None:
             log.info(f'Automation "{a_id}" was deleted. Removing related class instance.')
             del PvExcessControl.instances[a_id]
+            return False
+        elif automation_state == 'on' and _get_state(s_enabled) == 'off':
+            log.debug(f'Doing nothing, because automation is actived but optional switch is off.')
             return False
         return True
 
