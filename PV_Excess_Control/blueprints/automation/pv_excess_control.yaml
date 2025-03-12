@@ -205,7 +205,7 @@ blueprint:
       name: "Minimum home battery level (to start)"
       description: >
         Minimum desired power level (in percent) of your home battery (to start).
-        
+
         Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediciton.
 
         **[WARNING]**
@@ -216,7 +216,7 @@ blueprint:
         **[NOTE]**
 
         - *The home battery will be charged to the specified level *before* switching on appliances or to consider solar production forecast.
-        
+
       default: False
       selector:
         boolean:

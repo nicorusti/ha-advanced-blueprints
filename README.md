@@ -12,4 +12,5 @@ Advanced Home Assistant Blueprints combined with pyscript for extra useful autom
 See seperate README within sub-folders
 
 ## Credits
+
 Originally based and created by https://github.com/InventoCasa/ha-advanced-blueprints

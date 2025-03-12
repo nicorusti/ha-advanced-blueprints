@@ -69,4 +69,5 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 - To remove the auto-control of a single appliance, simply delete the related automation.
 
 ## Credits
+
 Originally based and created by https://github.com/InventoCasa/ha-advanced-blueprints
