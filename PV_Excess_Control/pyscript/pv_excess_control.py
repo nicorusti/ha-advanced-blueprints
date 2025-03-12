@@ -200,7 +200,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
                       max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
-                      appliance_minimum_run_time, appliance_runtime_deadline):
+                      appliance_minimum_run_time, appliance_runtime_deadline, enabled):
 
     automation_id = automation_id[11:] if automation_id[:11] == 'automation.' else automation_id
     automation_id = _replace_vowels(f"automation.{automation_id.strip().replace(' ', '_').lower()}")
@@ -212,7 +212,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
                     max_current, appliance_switch, appliance_switch_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
                     grid_voltage, import_export_power, home_battery_capacity, solar_production_forecast, time_of_sunset,
-                    appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time, appliance_runtime_deadline)
+                    appliance_once_only, appliance_maximum_run_time, appliance_minimum_run_time, appliance_runtime_deadline, enabled)
 
 
 
@@ -252,7 +252,7 @@ class PvExcessControl:
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
-                 appliance_minimum_run_time, appliance_runtime_deadline):
+                 appliance_minimum_run_time, appliance_runtime_deadline, enabled):
         if automation_id not in PvExcessControl.instances:
             inst = self
         else:
@@ -284,6 +284,7 @@ class PvExcessControl:
         inst.appliance_minimum_run_time = appliance_minimum_run_time
         inst.appliance_runtime_deadline = _get_time_object(appliance_runtime_deadline)
         inst.enforce_minimum_run = False
+        inst.enabled = enabled
 
         inst.phases = appliance_phases
 
@@ -333,7 +334,7 @@ class PvExcessControl:
                 log_prefix = inst.log_prefix
 
                 # Check if automation is activated for specific instance
-                if not self.automation_activated(inst.automation_id):
+                if not self.automation_activated(inst.automation_id,inst.enabled):
                     continue
 
                 # Check if we are enforcing the minimum daily run time
@@ -629,7 +630,7 @@ class PvExcessControl:
                              not be switched off)
         """
         # Check if automation is activated for specific instance
-        if not self.automation_activated(inst.automation_id):
+        if not self.automation_activated(inst.automation_id,inst.enabled):
             return 0
         # Do not turn off only-on-appliances
         if inst.appliance_on_only:
@@ -660,10 +661,11 @@ class PvExcessControl:
             return power_consumption
 
 
-    def automation_activated(self, a_id):
+    def automation_activated(self, a_id, s_enabled):
         """
         Checks if the automation for a specific appliance is activated or not.
         :param a_id:    Automation ID in Home Assistant
+        :param s_enabled: Optional Switch for disabling the device
         :return:        True if automation is activated, False otherwise
         """
         automation_state = _get_state(a_id)
@@ -673,6 +675,9 @@ class PvExcessControl:
         elif automation_state is None:
             log.info(f'Automation "{a_id}" was deleted. Removing related class instance.')
             del PvExcessControl.instances[a_id]
+            return False
+        elif automation_state == 'on' and _get_state(s_enabled) == 'off':
+            log.debug(f'Doing nothing, because automation is actived but optional switch is off.')
             return False
         return True
 
