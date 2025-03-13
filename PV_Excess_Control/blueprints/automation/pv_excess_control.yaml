@@ -1,19 +1,14 @@
 blueprint:
-  name: INVENTOCASA - PV Excess Optimizer
+  name: PV Excess Optimizer
   description: >
     ### **PV EXCESS OPTIMIZER**
     
     Automatically control your appliances based on excess power from your solar system <br> <br>
-    &rarr; Remember to read the **[README](https://github.com/InventoCasa/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** for prerequisites and installation instructions
+    &rarr; Remember to read the **[README](https://github.com/nicorusti/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** for prerequisites and installation instructions
 
     &rarr; If you need help, head over to the [thread in the HA community forum](https://community.home-assistant.io/t/pv-solar-excess-optimizer-auto-control-appliances-wallbox-dish-washer-heatpump-based-on-excess-solar-power/552677)
 
-    &rarr; Bugs and feature requests can be created directly on the [GitHub repository](https://github.com/InventoCasa/ha-advanced-blueprints)
-
-
-    &rarr; If you want to say *thank you* for this blueprint, you can do so by buying me a [*virtual coffee*](https://www.buymeacoffee.com/henrikIC)
-    
-    <br><br>
+    &rarr; Bugs and feature requests can be created directly on the [GitHub repository](https://github.com/nicorusti/ha-advanced-blueprints)
 
   domain: automation
   input:
