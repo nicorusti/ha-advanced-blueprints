@@ -1173,10 +1173,9 @@ class PvExcessControl:
             )
             del PvExcessControl.instances[a_id]
             return False
-        elif automation_state == "on" and _get_state(s_enabled) == "off":
+        elif automation_state == 'on' and s_enabled and _get_state(s_enabled) == 'off':
             log.debug(
                 "Doing nothing, because automation is actived but optional switch is off."
-            )
             return False
         return True
 
