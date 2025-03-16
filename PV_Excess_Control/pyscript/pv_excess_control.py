@@ -627,7 +627,7 @@ class PvExcessControl:
         if inst.appliance_once_only and inst.switched_on_today:
             log.debug(f'{inst.log_prefix} "Only-Run-Once-Appliance" detected - Appliance was already switched on today - '
                       f'Not switching on again.')
-        elif s_enabled and _get_state(s_enabled) =='off':
+        elif inst.s_enabled and _get_state(inst.s_enabled) =='off':
                 log.debug(f'{inst.log_prefix} Optional switch set to disabled, not switching on')
         elif _turn_on(inst.appliance_switch):
             inst.switched_on_today = True
