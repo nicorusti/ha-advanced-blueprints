@@ -651,7 +651,6 @@ class PvExcessControl:
                                         actual_current + diff_current, inst.max_current
                                     ),
                                 ),
-								  
                             )
                             diff = 0.9
                         else:
@@ -932,9 +931,9 @@ class PvExcessControl:
                                 # "restart" history by adding defined power to each history value within the specified time frame
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
-                                if (
-                                    diff_current_off
-                                    >= - ( inst.min_current - ( inst.min_current * inst.min_solar_percent ) )
+                                if diff_current_off >= -(
+                                    inst.min_current
+                                    - (inst.min_current * inst.min_solar_percent)
                                 ):
                                     log.debug(
                                         f"{log_prefix} leaving dynamic appliance on at minimum current {inst.min_current} on at least {inst.min_solar_percent} solar - diff_current_off {diff_current_off}"
