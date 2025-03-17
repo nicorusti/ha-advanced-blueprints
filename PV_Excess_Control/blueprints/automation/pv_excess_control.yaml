@@ -4,14 +4,11 @@ blueprint:
     ### **PV EXCESS OPTIMIZER**
 
     Automatically control your appliances based on excess power from your solar system <br> <br>
-    &rarr; Remember to read the **[README](https://github.com/InventoCasa/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** for prerequisites and installation instructions
+    &rarr; Remember to read the **[README](https://github.com/nicorusti/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** for prerequisites and installation instructions
 
     &rarr; If you need help, head over to the [thread in the HA community forum](https://community.home-assistant.io/t/pv-solar-excess-optimizer-auto-control-appliances-wallbox-dish-washer-heatpump-based-on-excess-solar-power/552677)
 
-    &rarr; Bugs and feature requests can be created directly on the [GitHub repository](https://github.com/InventoCasa/ha-advanced-blueprints)
-
-
-    &rarr; If you want to say *thank you* for this blueprint, you can do so by buying me a [*virtual coffee*](https://www.buymeacoffee.com/henrikIC)
+    &rarr; Bugs and feature requests can be created directly on the [GitHub repository](https://github.com/nicorusti/ha-advanced-blueprints)
 
     <br><br>
 
@@ -22,19 +19,22 @@ blueprint:
       description: >
         **[IMPORTANT]**
 
-        **This field must contain the *entity_id* you defined for this automation.
+        **This field must contain the *entity_id* you defined for this automation.**
 
         The entity_id must be unique!
 
-        You can check your automation entity_id by clicking
-        on the three dots in the top right corner of your automation editor and selecting *info* --> *settings***
+        You can check your automation entity_id by clicking on the three dots in the top
+         right corner of your automation editor and selecting *info* --> *settings*
       selector:
         text:
     appliance_priority:
       name: "Appliance priority"
-      description: "Appliances with a higher number are prioritized compared to appliances with a lower number.\n\n
-      If the priority is greater than 1000 this appliance will be switched on, even if the excess power is not
-      sufficient for 100% of the needed power"
+      description: >
+        Appliances with a higher number are prioritized compared to appliances with a 
+        lower number.
+        
+        If the priority is greater than 1000 this appliance will be switched on, even 
+        if the excess power is not sufficient for 100% of the needed power
       default: 1
       selector:
         number:
