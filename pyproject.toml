@@ -1,4 +1,4 @@
 [tool.ruff]
-builtins = ["state","log","service"]
-[tool.ruff.lint.flake8-builtins]
-builtins-ignorelist = ["state","log","service"]
+builtins = ["state","log","service","time_trigger","task"]
+#[tool.ruff.lint.flake8-builtins]
+#builtins-ignorelist = ["state","log","service","time_trigger","task"]
