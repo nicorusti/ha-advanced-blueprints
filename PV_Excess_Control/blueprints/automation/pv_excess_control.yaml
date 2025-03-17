@@ -30,10 +30,10 @@ blueprint:
     appliance_priority:
       name: "Appliance priority"
       description: >
-        Appliances with a higher number are prioritized compared to appliances with a 
+        Appliances with a higher number are prioritized compared to appliances with a
         lower number.
-        
-        If the priority is greater than 1000 this appliance will be switched on, even 
+
+        If the priority is greater than 1000 this appliance will be switched on, even
         if the excess power is not sufficient for 100% of the needed power
       default: 1
       selector:
@@ -42,7 +42,6 @@ blueprint:
           max: 2000
           mode: box
           unit_of_measurement: "Priority level"
-
 
     grid_voltage:
       name: "Mains Voltage"
@@ -154,7 +153,6 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
-
 
     home_battery_level:
       name: "Home battery level"
@@ -384,7 +382,6 @@ blueprint:
       selector:
         time:
 
-
     dynamic_current_appliance:
       name: "Dynamic current control"
       description: "Tick this box if your appliance supports different current levels.\nUseful e.g. for **wallboxes**.\nIf False, the appliance will only be switched on or off in relation to the PV excess."
@@ -494,7 +491,6 @@ blueprint:
           step: 1
           unit_of_measurement: phases
 
-
     defined_current:
       name: "Appliance typical current draw"
       description: >
@@ -533,13 +529,10 @@ blueprint:
             - switch
           multiple: false
 
-
-
 mode: single
 triggers:
   - trigger: homeassistant
     event: start
-
 
 action:
   - service: pyscript.pv_excess_control
