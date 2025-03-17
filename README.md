@@ -9,7 +9,7 @@ Advanced Home Assistant Blueprints combined with pyscript for extra useful autom
 
 ## Documentation
 
-See seperate README within sub-folders
+See separate README within sub-folders
 
 ## Credits
 

@@ -206,7 +206,7 @@ blueprint:
       description: >
         Minimum desired power level (in percent) of your home battery (to start).
 
-        Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediciton.
+        Tick this box if your appliance should only be turned on, if enough battery level and without solar forecast prediction.
 
         **[WARNING]**
 
