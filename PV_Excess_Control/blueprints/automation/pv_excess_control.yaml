@@ -213,7 +213,7 @@ blueprint:
 
         - *The home battery will be charged to the specified level *before* switching on appliances or to consider solar production forecast.
 
-      default: False
+      default: false
       selector:
         boolean:
 
@@ -323,13 +323,13 @@ blueprint:
         Tick this box if your appliance should only be turned on, but **never off**.
 
         Useful e.g. for washing machines, which should not be turned off even if there is not enough solar power anymore.
-      default: False
+      default: false
       selector:
         boolean:
     appliance_once_only:
       name: "Only-Run-Once-Appliance"
       description: "Tick this box if your appliance should run **once a day** at most."
-      default: False
+      default: false
       selector:
         boolean:
 
@@ -383,21 +383,21 @@ blueprint:
     dynamic_current_appliance:
       name: "Dynamic current control"
       description: "Tick this box if your appliance supports different current levels.\nUseful e.g. for **wallboxes**.\nIf False, the appliance will only be switched on or off in relation to the PV excess."
-      default: False
+      default: false
       selector:
         boolean:
 
     round_target_current:
       name: "Round target current"
       description: "Tick this box if your appliance only supports integer target currents. Will round to full integers."
-      default: False
+      default: false
       selector:
         boolean:
 
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
       description: "Tick this box if your wallbox needs to be set to current 0 for deactivating else min_current is used."
-      default: False
+      default: false
       selector:
         boolean:
 
