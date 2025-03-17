@@ -233,6 +233,7 @@ def pv_excess_control(
     load_power,
     home_battery_level,
     min_home_battery_level,
+    min_home_battery_level_start,
     dynamic_current_appliance,
     round_target_current,
     deactivating_current,
@@ -273,6 +274,7 @@ def pv_excess_control(
         load_power,
         home_battery_level,
         min_home_battery_level,
+        min_home_battery_level_start,
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
@@ -339,6 +341,7 @@ class PvExcessControl:
         load_power,
         home_battery_level,
         min_home_battery_level,
+        min_home_battery_level_start,
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
@@ -641,15 +644,16 @@ class PvExcessControl:
                             + 1
                         )
                         if inst.round_target_current:
-                            target_current = round(
+                            target_current = int(
                                 max(
                                     inst.min_current,
                                     min(
                                         actual_current + diff_current, inst.max_current
                                     ),
                                 ),
-                                0,
+								  
                             )
+                            diff = 0.9
                         else:
                             target_current = round(
                                 max(
@@ -660,8 +664,9 @@ class PvExcessControl:
                                 ),
                                 1,
                             )
+                            diff = 0.09
                         log.debug(
-                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current}"
+                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current} | Diff: {diff}"
                         )
                         # TODO: minimum current step should be made configurable (e.g. 1A)
                         # increase current if following conditions are met
@@ -669,7 +674,7 @@ class PvExcessControl:
                         # - previously set current was above minimum, alternatively  if appliance can run at min current partially on solar
                         # - If appliance was not just turned on from 0 in last round (as some chargers take a minute to start charging)
                         if (
-                            diff_current > 0.09
+                            diff_current > diff
                             and prev_set_amps < target_current
                             and (
                                 prev_set_amps >= inst.min_current
@@ -690,7 +695,7 @@ class PvExcessControl:
                                 f"{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase."
                             )
                             # TODO: should we use previously set current below there?
-                            diff_power = (
+                            diff_power = int(
                                 (target_current - actual_current)
                                 * PvExcessControl.grid_voltage
                                 * inst.phases
@@ -710,7 +715,7 @@ class PvExcessControl:
                     # Check if there is sufficient excess power to power the appliance
                     #   or if the appliance has a high priority (see #64)
                     #   or if the appliance should be turned anyways to meet appliance_minimum_run_time
-                    defined_power = (
+                    defined_power = int(
                         inst.defined_current
                         * PvExcessControl.grid_voltage
                         * inst.phases
@@ -890,11 +895,10 @@ class PvExcessControl:
                             )
                             # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
-                                target_current = round(
+                                target_current = int(
                                     max(
                                         inst.min_current, actual_current + diff_current
                                     ),
-                                    0,
                                 )
                             else:
                                 target_current = round(
@@ -915,7 +919,7 @@ class PvExcessControl:
                                     inst.appliance_current_set_entity, target_current
                                 )
                                 # add released power consumption to next appliances in list
-                                diff_power = (
+                                diff_power = int(
                                     (actual_current - target_current)
                                     * PvExcessControl.grid_voltage
                                     * inst.phases
@@ -930,7 +934,7 @@ class PvExcessControl:
                             else:
                                 if (
                                     diff_current_off
-                                    > -inst.min_current * inst.min_solar_percent
+                                    >= - ( inst.min_current - ( inst.min_current * inst.min_solar_percent ) )
                                 ):
                                     log.debug(
                                         f"{log_prefix} leaving dynamic appliance on at minimum current {inst.min_current} on at least {inst.min_solar_percent} solar - diff_current_off {diff_current_off}"
@@ -1247,7 +1251,7 @@ class PvExcessControl:
             return False
 
         # Calculate remaining appliance power need to meet minimum runtime
-        defined_power = (
+        defined_power = int(
             inst.defined_current * PvExcessControl.grid_voltage * inst.phases
         )
         projected_future_power_usage = (
