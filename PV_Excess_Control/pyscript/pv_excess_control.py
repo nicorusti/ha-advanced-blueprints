@@ -1282,8 +1282,10 @@ class PvExcessControl:
             else:
                 # Calc values based on separate sensors
                 load_power = _get_num_state(PvExcessControl.load_power)
-        except Exception as e:
-            log.error("Could not get the current load power, using default of 500 - {e}")
+        except Exception:
+            log.error(
+                "Could not get the current load power, using default of 500 - {e}"
+            )
             load_power = 500
         remaining_usage = time_of_sunset * load_power / 1000
         remaining_power = remaining_forecast - remaining_usage
