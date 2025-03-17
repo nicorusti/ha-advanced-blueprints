@@ -3,7 +3,7 @@ blueprint:
   description: >
     ### **PV EXCESS OPTIMIZER**
 
-    Automatically control your appliances based on excess power from your solar 
+    Automatically control your appliances based on excess power from your solar
     system <br> <br>
     &rarr; Remember to read the **[README](https://github.com/nicorusti/ha-advanced-blueprints/blob/main/PV_Excess_Control/README.md)** for prerequisites and installation instructions
 
