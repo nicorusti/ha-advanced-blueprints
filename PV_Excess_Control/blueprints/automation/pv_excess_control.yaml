@@ -49,7 +49,6 @@ blueprint:
         Typically 230V for most of EU, 110V for US.
 
 
-
         **[WARNING]**
 
         - **This value must be the same for all your created automations based on this blueprint!**
