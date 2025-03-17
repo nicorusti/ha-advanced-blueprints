@@ -1178,7 +1178,7 @@ class PvExcessControl:
             return False
         elif automation_state == "on" and s_enabled and _get_state(s_enabled) == "off":
             log.debug(
-                "Doing nothing, because automation is actived but optional switch is off."
+                "Doing nothing, because automation is activated but optional switch is off."
             )
             return False
         return True
@@ -1282,8 +1282,8 @@ class PvExcessControl:
             else:
                 # Calc values based on separate sensors
                 load_power = _get_num_state(PvExcessControl.load_power)
-        except:
-            log.error("Could not get the current load power, using default of 500")
+        except Exception as e:
+            log.error("Could not get the current load power, using default of 500 - {e}")
             load_power = 500
         remaining_usage = time_of_sunset * load_power / 1000
         remaining_power = remaining_forecast - remaining_usage
