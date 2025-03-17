@@ -1,0 +1,2 @@
+[tool.ruff]
+builtins = ["state|log"]
