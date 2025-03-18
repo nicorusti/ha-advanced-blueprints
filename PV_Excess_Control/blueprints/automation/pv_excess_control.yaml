@@ -274,7 +274,9 @@ blueprint:
 
     appliance_switch:
       name: "Appliance Entity"
-      description: "Entity to control the appliance (e.g. switch entity, climate entity, light entity, ...)"
+      description: >
+        Entity to control the appliance (e.g. switch entity, climate entity,
+        light entity, ...)
       selector:
         entity:
           multiple: false
@@ -327,7 +329,8 @@ blueprint:
         boolean:
     appliance_once_only:
       name: "Only-Run-Once-Appliance"
-      description: "Tick this box if your appliance should run **once a day** at most."
+      description: >
+        Tick this box if your appliance should run **once a day** at most.
       default: false
       selector:
         boolean:
@@ -358,7 +361,9 @@ blueprint:
 
     appliance_maximum_run_time:
       name: "Appliance maximum daily runtime"
-      description: "Limits the maximum time the appliance should run in a day.\n0 means infinite time. This value must be greater than minimum runtime."
+      description: >
+        Limits the maximum time the appliance should run in a day. 0 means 
+        infinite time. This value must be greater than minimum runtime.
       default: 0
       selector:
         number:
@@ -381,21 +386,28 @@ blueprint:
 
     dynamic_current_appliance:
       name: "Dynamic current control"
-      description: "Tick this box if your appliance supports different current levels.\nUseful e.g. for **wallboxes**.\nIf False, the appliance will only be switched on or off in relation to the PV excess."
+      description: >
+        Tick this box if your appliance supports different current levels.
+        Useful e.g. for **wallboxes**.
+        If false, the appliance will only be switched on or off in relation to the PV excess.
       default: false
       selector:
         boolean:
 
     round_target_current:
       name: "Round target current"
-      description: "Tick this box if your appliance only supports integer target currents. Will round to full integers."
+      description: >
+        Tick this box if your appliance only supports integer target currents. 
+        Will round to full integers.
       default: false
       selector:
         boolean:
 
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
-      description: "Tick this box if your wallbox needs to be set to current 0 for deactivating else min_current is used."
+      description: >
+        Tick this box if your wallbox needs to be set to current 0 for 
+        deactivating else min_current is used.
       default: false
       selector:
         boolean:
