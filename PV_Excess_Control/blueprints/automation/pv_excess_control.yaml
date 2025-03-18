@@ -378,7 +378,7 @@ blueprint:
         The latest time by which the appliance must have completed its minimum
          runtime. If not set, midnight (23:59) will be used as default.
 
-        **Example:** If you set `22:30:00`, the automation will ensure that the 
+        **Example:** If you set `22:30:00`, the automation will ensure that the
         appliance has met its minimum runtime by 22:30.
       default: "23:59:00"
       selector:
@@ -389,7 +389,7 @@ blueprint:
       description: >
         Tick this box if your appliance supports different current levels.
         Useful e.g. for **wallboxes**.
-        If false, the appliance will only be switched on or off in relation to 
+        If false, the appliance will only be switched on or off in relation to
         the PV excess.
       default: false
       selector:
@@ -470,17 +470,17 @@ blueprint:
     min_solar_percent:
       name: "Minimum solar power percentage"
       description: >
-        Minimum percentage of solar power to run the appliance. E.g. if you 
-        configure it to 40%, your appliance will be on as long as 40% of the 
-        power comes from solar. This is useful to keep running the appliance 
+        Minimum percentage of solar power to run the appliance. E.g. if you
+        configure it to 40%, your appliance will be on as long as 40% of the
+        power comes from solar. This is useful to keep running the appliance
         even at times of low production, like sunset or sunrise, or in case you
         have a PV that is not sufficient to fully power the appliance.
 
 
         **[NOTE]**
 
-        - **Currently only works with dynamic current appliances! It therefore 
-        runs the dynamic current appliance at minimum current as long as it can 
+        - **Currently only works with dynamic current appliances! It therefore
+        runs the dynamic current appliance at minimum current as long as it can
         be partially run on solar.**
 
       default: 100
@@ -493,8 +493,8 @@ blueprint:
     appliance_phases:
       name: "Appliance Phases"
       description: >
-        Input here, with how many phases your appliance works. Typically, you 
-        either have 1 phase (e.g. washing machine, dishwasher) or 3 phases 
+        Input here, with how many phases your appliance works. Typically, you
+        either have 1 phase (e.g. washing machine, dishwasher) or 3 phases
         (wallbox).
 
 
@@ -515,7 +515,7 @@ blueprint:
       description: >
         Typical/expected current draw of your appliance per phase.
 
-        Relevant for deciding how much excess is needed before turning the 
+        Relevant for deciding how much excess is needed before turning the
         specific appliance on.
 
         If your appliance supports dynamic current setting, set the *typical
