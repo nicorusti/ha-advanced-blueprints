@@ -274,7 +274,9 @@ blueprint:
 
     appliance_switch:
       name: "Appliance Entity"
-      description: "Entity to control the appliance (e.g. switch entity, climate entity, light entity, ...)"
+      description: >
+        Entity to control the appliance (e.g. switch entity, climate entity,
+        light entity, ...)
       selector:
         entity:
           multiple: false
@@ -327,7 +329,8 @@ blueprint:
         boolean:
     appliance_once_only:
       name: "Only-Run-Once-Appliance"
-      description: "Tick this box if your appliance should run **once a day** at most."
+      description: >
+        Tick this box if your appliance should run **once a day** at most.
       default: false
       selector:
         boolean:
@@ -358,7 +361,9 @@ blueprint:
 
     appliance_maximum_run_time:
       name: "Appliance maximum daily runtime"
-      description: "Limits the maximum time the appliance should run in a day.\n0 means infinite time. This value must be greater than minimum runtime."
+      description: >
+        Limits the maximum time the appliance should run in a day. 0 means
+        infinite time. This value must be greater than minimum runtime.
       default: 0
       selector:
         number:
@@ -370,32 +375,40 @@ blueprint:
     appliance_runtime_deadline:
       name: "Appliance Runtime Deadline"
       description: >
-        The latest time by which the appliance must have completed its minimum runtime.
-        If not set, midnight (23:59) will be used as default.
+        The latest time by which the appliance must have completed its minimum
+         runtime. If not set, midnight (23:59) will be used as default.
 
-        **Example:** If you set `22:30:00`, the automation will ensure that the appliance
-        has met its minimum runtime by 22:30.
+        **Example:** If you set `22:30:00`, the automation will ensure that the
+        appliance has met its minimum runtime by 22:30.
       default: "23:59:00"
       selector:
         time:
 
     dynamic_current_appliance:
       name: "Dynamic current control"
-      description: "Tick this box if your appliance supports different current levels.\nUseful e.g. for **wallboxes**.\nIf False, the appliance will only be switched on or off in relation to the PV excess."
+      description: >
+        Tick this box if your appliance supports different current levels.
+        Useful e.g. for **wallboxes**.
+        If false, the appliance will only be switched on or off in relation to
+        the PV excess.
       default: false
       selector:
         boolean:
 
     round_target_current:
       name: "Round target current"
-      description: "Tick this box if your appliance only supports integer target currents. Will round to full integers."
+      description: >
+        Tick this box if your appliance only supports integer target currents.
+        Will round to full integers.
       default: false
       selector:
         boolean:
 
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
-      description: "Tick this box if your wallbox needs to be set to current 0 for deactivating else min_current is used."
+      description: >
+        Tick this box if your wallbox needs to be set to current 0 for
+        deactivating else min_current is used.
       default: false
       selector:
         boolean:
@@ -457,12 +470,18 @@ blueprint:
     min_solar_percent:
       name: "Minimum solar power percentage"
       description: >
-        Minimum percentage of solar power to run the appliance. E.g. if you configure it to 40%, your appliance will be on as long as 40% of the power comes from solar. This is useful to keep running the appliance even at times of low production, like sunset or sunrise, or in case you have a PV that is not sufficient to fully power the appliance.
+        Minimum percentage of solar power to run the appliance. E.g. if you
+        configure it to 40%, your appliance will be on as long as 40% of the
+        power comes from solar. This is useful to keep running the appliance
+        even at times of low production, like sunset or sunrise, or in case you
+        have a PV that is not sufficient to fully power the appliance.
 
 
         **[NOTE]**
 
-        - **Currently only works with dynamic current appliances! It therefore runs the dynamic current appliance at minimum current as long as it can be partially run on solar.**
+        - **Currently only works with dynamic current appliances! It therefore
+        runs the dynamic current appliance at minimum current as long as it can
+        be partially run on solar.**
 
       default: 100
       selector:
@@ -474,12 +493,15 @@ blueprint:
     appliance_phases:
       name: "Appliance Phases"
       description: >
-        Input here, with how many phases your appliance works. Typically, you either have 1 phase (e.g. washing machine, dishwasher) or 3 phases (wallbox).
+        Input here, with how many phases your appliance works. Typically, you
+        either have 1 phase (e.g. washing machine, dishwasher) or 3 phases
+        (wallbox).
 
 
         **[NOTE]**
 
-        If you have a three-phase wallbox, but your car can only charge with one phase, you need to input 1 here.
+        If you have a three-phase wallbox, but your car can only charge with one
+        phase, you need to input 1 here.
       default: 1
       selector:
         number:
@@ -493,9 +515,11 @@ blueprint:
       description: >
         Typical/expected current draw of your appliance per phase.
 
-        Relevant for deciding how much excess is needed before turning the specific appliance on.
+        Relevant for deciding how much excess is needed before turning the
+        specific appliance on.
 
-        If your appliance supports dynamic current setting, set the *typical current* to the same value as the *minimum dynamic current*.
+        If your appliance supports dynamic current setting, set the *typical
+        current* to the same value as the *minimum dynamic current*.
       default: 6
       selector:
         number:
@@ -506,9 +530,11 @@ blueprint:
     actual_power:
       name: "Appliance actual power sensor"
       description: >
-        Sensor which contains the **current power consumption** of the appliance in watts.
+        Sensor which contains the **current power consumption** of the appliance
+        in watts.
 
-        If this is left empty (not recommended), the *typical current draw* will be used instead.
+        If this is left empty (not recommended), the *typical current draw* will
+        be used instead.
       default:
       selector:
         entity:
