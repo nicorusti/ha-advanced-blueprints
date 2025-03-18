@@ -362,7 +362,7 @@ blueprint:
     appliance_maximum_run_time:
       name: "Appliance maximum daily runtime"
       description: >
-        Limits the maximum time the appliance should run in a day. 0 means 
+        Limits the maximum time the appliance should run in a day. 0 means
         infinite time. This value must be greater than minimum runtime.
       default: 0
       selector:
@@ -397,7 +397,7 @@ blueprint:
     round_target_current:
       name: "Round target current"
       description: >
-        Tick this box if your appliance only supports integer target currents. 
+        Tick this box if your appliance only supports integer target currents.
         Will round to full integers.
       default: false
       selector:
@@ -406,7 +406,7 @@ blueprint:
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
       description: >
-        Tick this box if your wallbox needs to be set to current 0 for 
+        Tick this box if your wallbox needs to be set to current 0 for
         deactivating else min_current is used.
       default: false
       selector:
