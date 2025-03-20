@@ -461,7 +461,6 @@ class PvExcessControl:
             for a_id, e in PvExcessControl.instances.copy().items():
                 inst = e["instance"]
                 inst.switch_interval_counter += 1
-                log_prefix = inst.log_prefix
 
                 # Check if automation is activated for specific instance
                 if not self.automation_activated(inst.automation_id, inst.enabled):
@@ -524,7 +523,7 @@ class PvExcessControl:
                         / max(1, inst.appliance_switch_interval)
                     )
                     log.debug(
-                        f"{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
+                        f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
                         f" AND {PvExcessControl.min_home_battery_level_start} is on. "
                         f"Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W"
                     )
@@ -553,7 +552,7 @@ class PvExcessControl:
                     )
 
                     log.debug(
-                        f"{log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
+                        f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
                         f" OR remaining solar forecast is higher than remaining capacity of home battery. "
                         f"Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W"
                     )
@@ -571,7 +570,7 @@ class PvExcessControl:
                         / max(1, inst.appliance_switch_interval)
                     )
                     log.debug(
-                        f"{log_prefix} Home battery charge is not sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %), "
+                        f"{inst.log_prefix} Home battery charge is not sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %), "
                         f"OR remaining solar forecast is lower than remaining capacity of home battery. "
                         f"Calculated average excess power based on >> export power <<: {avg_excess_power} W"
                     )
@@ -607,7 +606,7 @@ class PvExcessControl:
                         ).total_seconds()
                     )
                     log.debug(
-                        f"{log_prefix} Appliance is already switched on and has run for {(run_time / 60):.1f} minutes."
+                        f"{inst.log_prefix} Appliance is already switched on and has run for {(run_time / 60):.1f} minutes."
                     )
                     if (
                         avg_excess_power >= PvExcessControl.min_excess_power
@@ -665,7 +664,7 @@ class PvExcessControl:
                             )
                             diff = 0.09
                         log.debug(
-                            f"{log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current} | Diff: {diff}"
+                            f"{inst.log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current} | Diff: {diff}"
                         )
                         # TODO: minimum current step should be made configurable (e.g. 1A)
                         # increase current if following conditions are met
@@ -691,7 +690,7 @@ class PvExcessControl:
                                 inst.appliance_current_set_entity, target_current
                             )
                             log.info(
-                                f"{log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase."
+                                f"{inst.log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase."
                             )
                             # TODO: should we use previously set current below there?
                             diff_power = int(
@@ -707,7 +706,7 @@ class PvExcessControl:
                     # check if appliance can be switched on
                     if _get_state(inst.appliance_switch) != "off":
                         log.warning(
-                            f"{log_prefix} Appliance state (={_get_state(inst.appliance_switch)}) is neither ON nor OFF. "
+                            f"{inst.log_prefix} Appliance state (={_get_state(inst.appliance_switch)}) is neither ON nor OFF. "
                             f"Assuming OFF state."
                         )
 
@@ -732,7 +731,7 @@ class PvExcessControl:
                         )
                     ):
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
+                            f"{inst.log_prefix} Average Excess power ({avg_excess_power} W) is high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                         if (
                             inst.switch_interval_counter
@@ -740,7 +739,7 @@ class PvExcessControl:
                         ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
-                            log.info(f"{log_prefix} Switched on appliance.")
+                            log.info(f"{inst.log_prefix} Switched on appliance.")
                             # "restart" history by subtracting defined power from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -defined_power)
                             task.sleep(1)
@@ -750,12 +749,12 @@ class PvExcessControl:
                                 )
                         else:
                             log.debug(
-                                f"{log_prefix} Cannot switch on appliance, because appliance switch interval is not reached "
+                                f"{inst.log_prefix} Cannot switch on appliance, because appliance switch interval is not reached "
                                 f"({inst.switch_interval_counter}/{inst.appliance_switch_interval})."
                             )
                     else:
                         log.debug(
-                            f"{log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
+                            f"{inst.log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
                         )
                 # -------------------------------------------------------------------
 
@@ -767,9 +766,6 @@ class PvExcessControl:
                 avg_excess_power = dic["avg_excess_power"] + prev_consumption_sum
                 avg_excess_power_off = (
                     dic["avg_excess_power_off"] + prev_consumption_sum
-                )
-                log_prefix = (
-                    f"[{inst.appliance_switch} (Prio {inst.appliance_priority})]"
                 )
 
                 # -------------------------------------------------------------------
@@ -818,7 +814,7 @@ class PvExcessControl:
                         if power_consumption != 0:
                             prev_consumption_sum += power_consumption
                             log.debug(
-                                f"{log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
+                                f"{inst.log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
                                 f"which is now {prev_consumption_sum} W."
                             )
                         continue
@@ -846,12 +842,12 @@ class PvExcessControl:
                     ):
                         if avg_excess_power < PvExcessControl.min_excess_power:
                             log.debug(
-                                f"{log_prefix} Average Excess Power ({avg_excess_power} W) is less than minimum excess power "
+                                f"{inst.log_prefix} Average Excess Power ({avg_excess_power} W) is less than minimum excess power "
                                 f"({PvExcessControl.min_excess_power} W)."
                             )
                         else:
                             log.debug(
-                                f"{log_prefix} The appliance {power_consumption}W is not using any excess power {appliance_excess_power}W"
+                                f"{inst.log_prefix} The appliance {power_consumption}W is not using any excess power {appliance_excess_power}W"
                             )
 
                         # check if current of dyn. curr. appliance can be reduced
@@ -896,23 +892,23 @@ class PvExcessControl:
                             if inst.round_target_current:
                                 target_current = int(
                                     max(
-                                        inst.min_current, actual_current + diff_current
+                                        inst.min_current, actual_current - diff_current
                                     ),
                                 )
                             else:
                                 target_current = round(
                                     max(
-                                        inst.min_current, actual_current + diff_current
+                                        inst.min_current, actual_current - diff_current
                                     ),
                                     1,
                                 )
                             log.debug(
-                                f"{log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
+                                f"{inst.log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
                             )
                             if inst.min_current <= target_current < actual_current:
                                 # current can be reduced
                                 log.info(
-                                    f"{log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A."
+                                    f"{inst.log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A."
                                 )
                                 _set_value(
                                     inst.appliance_current_set_entity, target_current
@@ -925,7 +921,7 @@ class PvExcessControl:
                                 )
                                 prev_consumption_sum += diff_power
                                 log.debug(
-                                    f"{log_prefix} Added {diff_power=} W to prev_consumption_sum, "
+                                    f"{inst.log_prefix} Added {diff_power=} W to prev_consumption_sum, "
                                     f"which is now {prev_consumption_sum} W."
                                 )
                                 # "restart" history by adding defined power to each history value within the specified time frame
@@ -936,13 +932,13 @@ class PvExcessControl:
                                     - (inst.min_current * inst.min_solar_percent)
                                 ):
                                     log.debug(
-                                        f"{log_prefix} leaving dynamic appliance on at minimum current {inst.min_current} on at least {inst.min_solar_percent} solar - diff_current_off {diff_current_off}"
+                                        f"{inst.log_prefix} leaving dynamic appliance on at minimum current {inst.min_current} on at least {inst.min_solar_percent} solar - diff_current_off {diff_current_off}"
                                     )
                                 else:
                                     # current cannot be reduced
                                     # Set current to 0 and turn off appliance
                                     log.debug(
-                                        f"{log_prefix} switching dynamic appliance off min_current: {inst.min_current} min_solar_percent: {inst.min_solar_percent} diff_current_off: {diff_current_off}"
+                                        f"{inst.log_prefix} switching dynamic appliance off min_current: {inst.min_current} min_solar_percent: {inst.min_solar_percent} diff_current_off: {diff_current_off}"
                                     )
                                     # Some wallboxes may need to set current to 0 for deactivating
                                     if inst.deactivating_current:
@@ -958,7 +954,7 @@ class PvExcessControl:
                                     if power_consumption != 0:
                                         prev_consumption_sum += power_consumption
                                         log.debug(
-                                            f"{log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
+                                            f"{inst.log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
                                             f"which is now {prev_consumption_sum} W."
                                         )
                         else:
@@ -967,24 +963,24 @@ class PvExcessControl:
                             if power_consumption != 0:
                                 prev_consumption_sum += power_consumption
                                 log.debug(
-                                    f"{log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
+                                    f"{inst.log_prefix} Added {power_consumption=} W to prev_consumption_sum, "
                                     f"which is now {prev_consumption_sum} W."
                                 )
                     else:
                         if avg_excess_power > PvExcessControl.min_excess_power:
                             log.debug(
-                                f"{log_prefix} Average Excess Power ({avg_excess_power} W) is still greater than minimum excess power "
+                                f"{inst.log_prefix} Average Excess Power ({avg_excess_power} W) is still greater than minimum excess power "
                                 f"({PvExcessControl.min_excess_power} W) - Doing nothing."
                             )
 
                 else:
                     if _get_state(inst.appliance_switch) != "off":
                         log.warning(
-                            f"{log_prefix} Appliance state (={_get_state(inst.appliance_switch)}) is neither ON nor OFF. "
+                            f"{inst.log_prefix} Appliance state (={_get_state(inst.appliance_switch)}) is neither ON nor OFF. "
                             f"Assuming OFF state."
                         )
                     # Note: This can misfire right after an appliance has been switched on. Generally no problem.
-                    log.debug(f"{log_prefix} Appliance is already switched off.")
+                    log.debug(f"{inst.log_prefix} Appliance is already switched off.")
                 # -------------------------------------------------------------------
 
         return on_time
