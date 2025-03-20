@@ -685,7 +685,6 @@ class PvExcessControl:
                             )
                             log.info(
                                 f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
-                            
                             )
                             # TODO: should we use previously set current below there?
                             diff_power = int(
@@ -879,7 +878,6 @@ class PvExcessControl:
                                 avg_excess_power_off
                                 / (PvExcessControl.grid_voltage * inst.phases),
                                 1,
-
                             )
                             if inst.round_target_current:
                                 target_current = int(
