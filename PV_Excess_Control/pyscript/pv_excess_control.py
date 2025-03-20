@@ -892,13 +892,13 @@ class PvExcessControl:
                             if inst.round_target_current:
                                 target_current = int(
                                     max(
-                                        inst.min_current, actual_current + diff_current
+                                        inst.min_current, actual_current - diff_current
                                     ),
                                 )
                             else:
                                 target_current = round(
                                     max(
-                                        inst.min_current, actual_current + diff_current
+                                        inst.min_current, actual_current - diff_current
                                     ),
                                     1,
                                 )
