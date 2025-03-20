@@ -629,18 +629,15 @@ class PvExcessControl:
                                 / (PvExcessControl.grid_voltage * inst.phases),
                                 1,
                             )
+                        # TODO: prev_set_amps or just actual_current?
                         prev_set_amps = _get_num_state(
                             inst.appliance_current_set_entity,
                             return_on_error=inst.min_current,
                         )
-                        # Diff current has 1A extra, to compensate for rounding and small oscillations
-                        diff_current = (
-                            round(
-                                avg_excess_power
-                                / (PvExcessControl.grid_voltage * inst.phases),
-                                1,
-                            )
-                            + 1
+                        diff_current = round(
+                            avg_excess_power
+                            / (PvExcessControl.grid_voltage * inst.phases),
+                            1,
                         )
                         if inst.round_target_current:
                             target_current = int(
@@ -651,7 +648,6 @@ class PvExcessControl:
                                     ),
                                 ),
                             )
-                            diff = 0.9
                         else:
                             target_current = round(
                                 max(
@@ -662,9 +658,8 @@ class PvExcessControl:
                                 ),
                                 1,
                             )
-                            diff = 0.09
                         log.debug(
-                            f"{inst.log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current} | Diff: {diff}"
+                            f"{inst.log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current}"
                         )
                         # TODO: minimum current step should be made configurable (e.g. 1A)
                         # increase current if following conditions are met
@@ -672,8 +667,7 @@ class PvExcessControl:
                         # - previously set current was above minimum, alternatively  if appliance can run at min current partially on solar
                         # - If appliance was not just turned on from 0 in last round (as some chargers take a minute to start charging)
                         if (
-                            diff_current > diff
-                            and prev_set_amps < target_current
+                            prev_set_amps < target_current
                             and (
                                 prev_set_amps >= inst.min_current
                                 or (
@@ -690,7 +684,8 @@ class PvExcessControl:
                                 inst.appliance_current_set_entity, target_current
                             )
                             log.info(
-                                f"{inst.log_prefix} Setting dynamic current appliance from {prev_set_amps} to {target_current} A per phase."
+                                f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
+                            
                             )
                             # TODO: should we use previously set current below there?
                             diff_power = int(
@@ -868,27 +863,24 @@ class PvExcessControl:
                                     / (PvExcessControl.grid_voltage * inst.phases),
                                     1,
                                 )
+                            # TODO: prev_set_amps or just actual_current?
+                            prev_set_amps = _get_num_state(
+                                inst.appliance_current_set_entity,
+                                return_on_error=inst.max_current,
+                            )
                             # diff_current is used to eventually lower current every interval
                             # diff_current_off is evaluated over the switch off interval and it is therefore used to turn off appliance
                             diff_current = round(
-                                round(
-                                    avg_excess_power
-                                    / (PvExcessControl.grid_voltage * inst.phases),
-                                    1,
-                                )
-                                + 1,
+                                avg_excess_power
+                                / (PvExcessControl.grid_voltage * inst.phases),
                                 1,
                             )
                             diff_current_off = round(
-                                round(
-                                    avg_excess_power_off
-                                    / (PvExcessControl.grid_voltage * inst.phases),
-                                    1,
-                                )
-                                + 1,
+                                avg_excess_power_off
+                                / (PvExcessControl.grid_voltage * inst.phases),
                                 1,
+
                             )
-                            # Round up by 1A to compensate for oscillations
                             if inst.round_target_current:
                                 target_current = int(
                                     max(
@@ -903,12 +895,12 @@ class PvExcessControl:
                                     1,
                                 )
                             log.debug(
-                                f"{inst.log_prefix} {actual_current=}A | {diff_current=}A | {diff_current_off=}A | {target_current=}A | Round: {inst.round_target_current}"
+                                f"{inst.log_prefix} {prev_set_amps=}A | {actual_current=}A | {diff_current=}A | {target_current=}A | Round: {inst.round_target_current}"
                             )
-                            if inst.min_current <= target_current < actual_current:
+                            if inst.min_current <= target_current < prev_set_amps:
                                 # current can be reduced
                                 log.info(
-                                    f"{inst.log_prefix} Reducing dynamic current appliance from {actual_current} A to {target_current} A."
+                                    f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
                                 )
                                 _set_value(
                                     inst.appliance_current_set_entity, target_current
