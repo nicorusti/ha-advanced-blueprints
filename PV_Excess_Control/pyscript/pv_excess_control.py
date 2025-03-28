@@ -522,6 +522,14 @@ class PvExcessControl:
                         )
                         / max(1, inst.appliance_switch_interval)
                     )
+                    avg_excess_power_off = int(
+                        sum(
+                            PvExcessControl.pv_history[
+                                -inst.appliance_switch_off_interval :
+                            ]
+                        )
+                        / max(1, inst.appliance_switch_off_interval)
+                    )
                     log.debug(
                         f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
                         f" AND {PvExcessControl.min_home_battery_level_start} is on. "
@@ -550,7 +558,6 @@ class PvExcessControl:
                         )
                         / max(1, inst.appliance_switch_off_interval)
                     )
-
                     log.debug(
                         f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
                         f" OR remaining solar forecast is higher than remaining capacity of home battery. "
@@ -568,6 +575,14 @@ class PvExcessControl:
                             ]
                         )
                         / max(1, inst.appliance_switch_interval)
+                    )
+                    avg_excess_power_off = int(
+                        sum(
+                            PvExcessControl.pv_history[
+                                -inst.appliance_switch_off_interval :
+                            ]
+                        )
+                        / max(1, inst.appliance_switch_off_interval)
                     )
                     log.debug(
                         f"{inst.log_prefix} Home battery charge is not sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %), "
