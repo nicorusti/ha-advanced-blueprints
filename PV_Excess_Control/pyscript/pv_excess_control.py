@@ -571,8 +571,6 @@ class PvExcessControl:
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
-                zero_feed_in_load = PvExcessControl.zero_feed_in_load
-                zero_feed_in_level = PvExcessControl.zero_feed_in_level
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if export_pwr_state is None or pv_power_state is None or load_power_state is None:
                     raise Exception(f'Could not update Export/PV history {PvExcessControl.export_power=} | {PvExcessControl.pv_power=} | '
@@ -583,9 +581,9 @@ class PvExcessControl:
                 if (
                     PvExcessControl.zero_feed_in
                     and home_battery_level is not None
-                    and home_battery_level > zero_feed_in_level
+                    and home_battery_level > PvExcessControl.zero_feed_in_level
                     and export_pwr_state == 0
-                    and (int(pv_power_state - load_power_state) < zero_feed_in_load)
+                    and (int(pv_power_state - load_power_state) < PvExcessControl.zero_feed_in_load)
                 ):
                     ## recalc the average to forecast best case planned_excess.    
                     if PvExcessControl.solar_production_forecast:
