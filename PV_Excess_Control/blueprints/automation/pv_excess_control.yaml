@@ -224,15 +224,15 @@ blueprint:
     zero_feed_in:
       name: "Zero Feed In"
       description: >
-        If zero feed in activated and battery is nearly full.   
+        If zero feed in activated and battery is nearly full. Calculate remaining overall load power usage until sunset, assuming the zero_feed_in_load load.
       default: False
       selector:
         boolean:
 
     zero_feed_in_load:
-      name: "Zero Feed In Load"
+      name: "Zero Feed In - Load"
       description: >
-        Typical load expected.
+        Assumed typical load.
       default: 300
       selector:
         number:
@@ -244,7 +244,7 @@ blueprint:
     zero_feed_in_level:
       name: "Zero Feed In - Battery Level"
       description: >
-        Minimum desired power level (in percent) of your home battery before starting even with zero feed in
+        Minimum desired power level (in percent) of your home battery before starting consuming even with zero feed in.
       default: 99
       selector:
         number:
