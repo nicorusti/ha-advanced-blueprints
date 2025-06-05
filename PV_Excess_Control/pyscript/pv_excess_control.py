@@ -196,7 +196,7 @@ def enforce_runtime():
 
 @service
 def pv_excess_control(automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                      min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, dynamic_current_appliance, appliance_phases, min_current,
+                      min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, zero_feed_in_level, dynamic_current_appliance, appliance_phases, min_current,
                       max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -207,7 +207,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
 
 
     PvExcessControl(automation_id, appliance_priority, export_power, pv_power,
-                    load_power, home_battery_level, min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load,
+                    load_power, home_battery_level, min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, zero_feed_in_level,
                     dynamic_current_appliance, appliance_phases, min_current,
                     max_current, appliance_switch, appliance_switch_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
@@ -248,7 +248,7 @@ class PvExcessControl:
 
 
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                 min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, dynamic_current_appliance, appliance_phases, min_current,
+                 min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, zero_feed_in_level, dynamic_current_appliance, appliance_phases, min_current,
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -272,6 +272,7 @@ class PvExcessControl:
         PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
         PvExcessControl.zero_feed_in = bool(zero_feed_in)
         PvExcessControl.zero_feed_in_load = zero_feed_in_load
+        PvExcessControl.zero_feed_in_level = float(zero_feed_in_level)
                      
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.min_current = float(min_current)
@@ -571,6 +572,7 @@ class PvExcessControl:
                 pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
                 zero_feed_in_load = _get_num_state(PvExcessControl.zero_feed_in_load)
+                zero_feed_in_level = _get_num_state(PvExcessControl.zero_feed_in_level)
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if export_pwr_state is None or pv_power_state is None or load_power_state is None:
                     raise Exception(f'Could not update Export/PV history {PvExcessControl.export_power=} | {PvExcessControl.pv_power=} | '
@@ -581,7 +583,7 @@ class PvExcessControl:
                 if (
                     PvExcessControl.zero_feed_in
                     and home_battery_level is not None
-                    and home_battery_level > 99
+                    and home_battery_level > zero_feed_in_level
                     and export_pwr_state == 0
                     and (int(pv_power_state - load_power_state) < zero_feed_in_load)
                 ):

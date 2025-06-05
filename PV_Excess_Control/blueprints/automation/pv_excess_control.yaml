@@ -233,13 +233,25 @@ blueprint:
       name: "Zero Feed In Load"
       description: >
         Typical load expected.
-      default: 0
+      default: 300
       selector:
         number:
           min: 0
           max: 1000
           step: 1
           unit_of_measurement: W
+
+    zero_feed_in_level:
+      name: "Zero Feed In - Battery Level"
+      description: >
+        Minimum desired power level (in percent) of your home battery before starting even with zero feed in
+      default: 99
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
 
     home_battery_capacity:
       name: "Home battery capacity"
@@ -525,6 +537,7 @@ action:
       min_home_battery_level_start: !input min_home_battery_level_start
       zero_feed_in: !input zero_feed_in
       zero_feed_in_load: !input zero_feed_in_load
+      zero_feed_in_level: !input zero_feed_in_level
       dynamic_current_appliance: !input dynamic_current_appliance
       appliance_phases: !input appliance_phases
       min_current: !input min_current
