@@ -271,7 +271,7 @@ class PvExcessControl:
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
         PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
         PvExcessControl.zero_feed_in = bool(zero_feed_in)
-        PvExcessControl.zero_feed_in_load = float(zero_feed_in_load)
+        PvExcessControl.zero_feed_in_load = zero_feed_in_load
         PvExcessControl.zero_feed_in_level = float(zero_feed_in_level)
                      
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
@@ -571,8 +571,8 @@ class PvExcessControl:
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
-                zero_feed_in_load = _get_num_state(PvExcessControl.zero_feed_in_load)
-                zero_feed_in_level = _get_num_state(PvExcessControl.zero_feed_in_level)
+                zero_feed_in_load = PvExcessControl.zero_feed_in_load
+                zero_feed_in_level = PvExcessControl.zero_feed_in_level
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if export_pwr_state is None or pv_power_state is None or load_power_state is None:
                     raise Exception(f'Could not update Export/PV history {PvExcessControl.export_power=} | {PvExcessControl.pv_power=} | '
