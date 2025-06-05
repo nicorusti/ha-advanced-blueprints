@@ -196,7 +196,7 @@ def enforce_runtime():
 
 @service
 def pv_excess_control(automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                      min_home_battery_level, min_home_battery_level_start, dynamic_current_appliance, appliance_phases, min_current,
+                      min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, dynamic_current_appliance, appliance_phases, min_current,
                       max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                       actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                       home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -207,7 +207,7 @@ def pv_excess_control(automation_id, appliance_priority, export_power, pv_power,
 
 
     PvExcessControl(automation_id, appliance_priority, export_power, pv_power,
-                    load_power, home_battery_level, min_home_battery_level, min_home_battery_level_start,
+                    load_power, home_battery_level, min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load,
                     dynamic_current_appliance, appliance_phases, min_current,
                     max_current, appliance_switch, appliance_switch_interval,
                     appliance_current_set_entity, actual_power, defined_current, appliance_on_only,
@@ -248,7 +248,7 @@ class PvExcessControl:
 
 
     def __init__(self, automation_id, appliance_priority, export_power, pv_power, load_power, home_battery_level,
-                 min_home_battery_level, min_home_battery_level_start, dynamic_current_appliance, appliance_phases, min_current,
+                 min_home_battery_level, min_home_battery_level_start, zero_feed_in, zero_feed_in_load, dynamic_current_appliance, appliance_phases, min_current,
                  max_current, appliance_switch, appliance_switch_interval, appliance_current_set_entity,
                  actual_power, defined_current, appliance_on_only, grid_voltage, import_export_power,
                  home_battery_capacity, solar_production_forecast, time_of_sunset, appliance_once_only, appliance_maximum_run_time,
@@ -270,6 +270,8 @@ class PvExcessControl:
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
         PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
+        PvExcessControl.zero_feed_in = bool(zero_feed_in)
+        PvExcessControl.zero_feed_in_load = zero_feed_in_load
                      
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.min_current = float(min_current)
@@ -568,6 +570,7 @@ class PvExcessControl:
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
+                zero_feed_in_load = _get_num_state(PvExcessControl.zero_feed_in_load)
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if export_pwr_state is None or pv_power_state is None or load_power_state is None:
                     raise Exception(f'Could not update Export/PV history {PvExcessControl.export_power=} | {PvExcessControl.pv_power=} | '
@@ -575,7 +578,7 @@ class PvExcessControl:
                 export_pwr = int(export_pwr_state)
                 ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0 
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
-                if home_battery_level is not None and home_battery_level > 99 and export_pwr_state == 0 and (int(pv_power_state - load_power_state)< 300):
+                if PvExcessControl.zero_feed_in and home_battery_level is not None and home_battery_level > 99 and export_pwr_state == 0 and (int(pv_power_state - load_power_state)< zero_feed_in_load):
                     
                     ## recalc the average to forecast best case planned_excess. 
                     if PvExcessControl.solar_production_forecast:

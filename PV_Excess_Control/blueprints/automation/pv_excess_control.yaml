@@ -221,6 +221,26 @@ blueprint:
       selector:
         boolean:
 
+    zero_feed_in:
+      name: "Zero Feed In"
+      description: >
+        If zero feed in activated and battery is nearly full.   
+      default: False
+      selector:
+        boolean:
+
+    zero_feed_in_load:
+      name: "Zero Feed In Load"
+      description: >
+        Typical load expected.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 1000
+          step: 1
+          unit_of_measurement: W
+
     home_battery_capacity:
       name: "Home battery capacity"
       description: >
@@ -503,6 +523,8 @@ action:
       home_battery_level: !input home_battery_level
       min_home_battery_level: !input min_home_battery_level
       min_home_battery_level_start: !input min_home_battery_level_start
+      zero_feed_in: !input zero_feed_in
+      zero_feed_in_load: !input zero_feed_in_load
       dynamic_current_appliance: !input dynamic_current_appliance
       appliance_phases: !input appliance_phases
       min_current: !input min_current
