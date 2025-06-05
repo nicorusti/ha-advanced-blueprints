@@ -576,11 +576,16 @@ class PvExcessControl:
                     raise Exception(f'Could not update Export/PV history {PvExcessControl.export_power=} | {PvExcessControl.pv_power=} | '
                                     f'{PvExcessControl.load_power=} = {export_pwr_state=} | {pv_power_state=} | {load_power_state=}')
                 export_pwr = int(export_pwr_state)
-                ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0 
+                ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
-                if PvExcessControl.zero_feed_in and home_battery_level is not None and home_battery_level > 99 and export_pwr_state == 0 and (int(pv_power_state - load_power_state)< zero_feed_in_load):
-                    
-                    ## recalc the average to forecast best case planned_excess. 
+                if (
+                    PvExcessControl.zero_feed_in
+                    and home_battery_level is not None
+                    and home_battery_level > 99
+                    and export_pwr_state == 0
+                    and (int(pv_power_state - load_power_state) < zero_feed_in_load)
+                ):
+                    ## recalc the average to forecast best case planned_excess.    
                     if PvExcessControl.solar_production_forecast:
                         remaining_forecast = _get_num_state(
                             PvExcessControl.solar_production_forecast, return_on_error=0
@@ -592,13 +597,19 @@ class PvExcessControl:
                     sunset_string = _get_state(PvExcessControl.time_of_sunset)
                     sunset_time = datetime.datetime.fromisoformat(sunset_string)
                     time_now = datetime.datetime.now(datetime.timezone.utc)
-                    time_of_sunset = (sunset_time - time_now).total_seconds() / (60 * 60)
+                    time_of_sunset = (sunset_time - time_now).total_seconds() / (
+                        60 * 60
+                    )
                     # Calc values based on separate sensors
                     load_power = _get_num_state(PvExcessControl.load_power)
                     remaining_usage = time_of_sunset * load_power / 1000
 
-                    excess_pwr = (remaining_forecast - remaining_usage) / time_of_sunset * 1000 
-                    log.debug(f"Battery charged - planned excess calc:  {planned_excess}")
+                    excess_pwr = (
+                        (remaining_forecast - remaining_usage) / time_of_sunset * 1000
+                    )
+                    log.debug(
+                        f"Battery charged - planned excess calc:  {planned_excess}"
+                    )
                 else: 
                     excess_pwr = int(pv_power_state - load_power_state)
 
