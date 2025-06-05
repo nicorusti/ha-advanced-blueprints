@@ -271,7 +271,7 @@ class PvExcessControl:
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
         PvExcessControl.min_home_battery_level_start = bool(min_home_battery_level_start)
         PvExcessControl.zero_feed_in = bool(zero_feed_in)
-        PvExcessControl.zero_feed_in_load = zero_feed_in_load
+        PvExcessControl.zero_feed_in_load = float(zero_feed_in_load)
         PvExcessControl.zero_feed_in_level = float(zero_feed_in_level)
                      
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
