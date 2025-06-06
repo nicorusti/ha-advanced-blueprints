@@ -1041,8 +1041,10 @@ class PvExcessControl:
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
                 if (
                     PvExcessControl.zero_feed_in
-                    and home_battery_level is not None
-                    and home_battery_level > PvExcessControl.zero_feed_in_level
+                    and (
+                        (home_battery_level is not None and home_battery_level > PvExcessControl.zero_feed_in_level)
+                        or home_battery_level is None
+                    )
                     and export_pwr_state == 0
                     and (
                         int(pv_power_state - load_power_state)

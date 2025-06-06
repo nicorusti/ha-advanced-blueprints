@@ -220,7 +220,15 @@ blueprint:
       name: "Zero Feed In"
       description: >
         If zero feed in activated and battery is nearly full. Calculate remaining
-        overall load power usage until sunset, assuming the zero_feed_in_load load.
+        solar production forecase until sunset as pv power is reduced to load power.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+      
+        **[NOTE]**
+
+        - **solar production forecast** must be filled    
       default: False
       selector:
         boolean:
@@ -228,16 +236,28 @@ blueprint:
     zero_feed_in_load:
       name: "Zero Feed In - Load"
       description: >
-        Set this value to at least 30% of the difference between the actual PV power
-        production and the current power output load when batteries are at 100% charge.
-        Recommended values typically range from 100 to 400 W for safe operation.
+        This parameter defines the maximum allowed difference between actual PV power 
+        production and current power consumption when the battery is fully charged 
+        (SoC defined with *zero_feed_in_level*). Its purpose is to ignore small surplus values caused by system 
+        inefficiencies or inverter standby consumption, and to avoid false positives in 
+        PV production detection.
 
-        Note: In systems that do not export to the grid, when batteries are fully
-        charged (100%), the inverter reduces PV production to match the output load.
-        This prevents this automation from detecting the true excess power potential.
-        In this case, the excess power equals the total wasted energy.
-        To determine this, monitor PV production on a sunny day when batteries are fully
-        charged and no power is being exported to the grid.
+        Recommended setting:
+        Set this value to approximately twice the typical difference observed when the 
+        battery is full and PV production slightly exceeds the load.
+        Typical values: 100 to 400 W
+
+        Example:
+        If your system load is 500 W and PV shows 600 W when the battery is full, the 
+        difference is 100 W → set the threshold to 200 W.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+      
+        **[NOTE]**
+
+        - **zero_feed_in** must be activated  
       default: 300
       selector:
         number:
@@ -251,6 +271,15 @@ blueprint:
       description: >
         The power level (in percent) of your home battery must be higher than this value
         before starting consuming even with zero feed in.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+      
+        **[NOTE]**
+
+        - **zero_feed_in** must be activated
+        - value must be set if home battery is installed
       default: 99
       selector:
         number:
