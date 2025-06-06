@@ -234,6 +234,9 @@ def pv_excess_control(
     home_battery_level,
     min_home_battery_level,
     min_home_battery_level_start,
+    zero_feed_in,
+    zero_feed_in_load,
+    zero_feed_in_level,
     dynamic_current_appliance,
     round_target_current,
     deactivating_current,
@@ -275,6 +278,9 @@ def pv_excess_control(
         home_battery_level,
         min_home_battery_level,
         min_home_battery_level_start,
+        zero_feed_in,
+        zero_feed_in_load,
+        zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
@@ -342,6 +348,9 @@ class PvExcessControl:
         home_battery_level,
         min_home_battery_level,
         min_home_battery_level_start,
+        zero_feed_in,
+        zero_feed_in_load,
+        zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
@@ -386,6 +395,9 @@ class PvExcessControl:
         PvExcessControl.min_home_battery_level_start = bool(
             min_home_battery_level_start
         )
+        PvExcessControl.zero_feed_in = bool(zero_feed_in)
+        PvExcessControl.zero_feed_in_load = zero_feed_in_load
+        PvExcessControl.zero_feed_in_level = float(zero_feed_in_level)
 
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.round_target_current = bool(round_target_current)
@@ -1014,6 +1026,7 @@ class PvExcessControl:
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
+                home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if (
                     export_pwr_state is None
                     or pv_power_state is None
@@ -1024,7 +1037,48 @@ class PvExcessControl:
                         f"{PvExcessControl.load_power=} = {export_pwr_state=} | {pv_power_state=} | {load_power_state=}"
                     )
                 export_pwr = int(export_pwr_state)
-                excess_pwr = int(pv_power_state - load_power_state)
+                ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
+                ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
+                if (
+                    PvExcessControl.zero_feed_in
+                    and (
+                        (
+                            home_battery_level is not None
+                            and home_battery_level > PvExcessControl.zero_feed_in_level
+                        )
+                        or home_battery_level is None
+                    )
+                    and export_pwr_state == 0
+                    and (
+                        int(pv_power_state - load_power_state)
+                        < PvExcessControl.zero_feed_in_load
+                    )
+                ):
+                    ## recalc the average to forecast best case planned_excess.
+                    if PvExcessControl.solar_production_forecast:
+                        remaining_forecast = _get_num_state(
+                            PvExcessControl.solar_production_forecast, return_on_error=0
+                        )
+                    else:
+                        remaining_forecast = 0
+
+                    # Calculate remaining overall load power usage until sunset, assuming current load
+                    sunset_string = _get_state(PvExcessControl.time_of_sunset)
+                    sunset_time = datetime.datetime.fromisoformat(sunset_string)
+                    time_now = datetime.datetime.now(datetime.timezone.utc)
+                    time_of_sunset = (sunset_time - time_now).total_seconds() / (
+                        60 * 60
+                    )
+                    # Calc values based on separate sensors
+                    load_power = _get_num_state(PvExcessControl.load_power)
+                    remaining_usage = time_of_sunset * load_power / 1000
+
+                    excess_pwr = (
+                        (remaining_forecast - remaining_usage) / time_of_sunset * 1000
+                    )
+                    log.debug(f"Battery charged - planned excess calc:  {excess_pwr}")
+                else:
+                    excess_pwr = int(pv_power_state - load_power_state)
         except Exception as e:
             log.error(f"Could not update Export/PV history!: {e}")
             return
