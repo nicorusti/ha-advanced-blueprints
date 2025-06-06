@@ -1072,7 +1072,7 @@ class PvExcessControl:
                         (remaining_forecast - remaining_usage) / time_of_sunset * 1000
                     )
                     log.debug(
-                        f"Battery charged - planned excess calc:  {planned_excess}"
+                        f"Battery charged - planned excess calc:  {excess_pwr}"
                     )
                 else:
                     excess_pwr = int(pv_power_state - load_power_state)
