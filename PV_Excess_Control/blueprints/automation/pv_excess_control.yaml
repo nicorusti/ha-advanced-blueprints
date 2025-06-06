@@ -224,7 +224,8 @@ blueprint:
     zero_feed_in:
       name: "Zero Feed In"
       description: >
-        If zero feed in activated and battery is nearly full. Calculate remaining overall load power usage until sunset, assuming the zero_feed_in_load load.
+        If zero feed in activated and battery is nearly full. Calculate remaining 
+        overall load power usage until sunset, assuming the zero_feed_in_load load.
       default: False
       selector:
         boolean:
@@ -232,7 +233,16 @@ blueprint:
     zero_feed_in_load:
       name: "Zero Feed In - Load"
       description: >
-        Assumed typical load.
+        Set this value to at least 30% of the difference between the actual PV power 
+        production and the current power output load when batteries are at 100% charge. 
+        Recommended values typically range from 100 to 400 W for safe operation.
+
+        Note: In systems that do not export to the grid, when batteries are fully 
+        charged (100%), the inverter reduces PV production to match the output load. 
+        This prevents this automation from detecting the true excess power potential. 
+        In this case, the excess power equals the total wasted energy. 
+        To determine this, monitor PV production on a sunny day when batteries are fully 
+        charged and no power is being exported to the grid.
       default: 300
       selector:
         number:
@@ -244,7 +254,8 @@ blueprint:
     zero_feed_in_level:
       name: "Zero Feed In - Battery Level"
       description: >
-        Minimum desired power level (in percent) of your home battery before starting consuming even with zero feed in.
+        The power level (in percent) of your home battery must be higher than this value
+        before starting consuming even with zero feed in.
       default: 99
       selector:
         number:
