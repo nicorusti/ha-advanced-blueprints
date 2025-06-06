@@ -223,6 +223,7 @@ def enforce_runtime():
                 f"{inst.log_prefix} Ran for {run_time_min:.1f} out of {inst.appliance_minimum_run_time:.1f} minutes minimum runtime, appliance ran long enough, no minimum runtime enforcement"
             )
 
+
 @service
 def pv_excess_control(
     automation_id,
@@ -233,8 +234,8 @@ def pv_excess_control(
     home_battery_level,
     min_home_battery_level,
     min_home_battery_level_start,
-    zero_feed_in, 
-    zero_feed_in_load, 
+    zero_feed_in,
+    zero_feed_in_load,
     zero_feed_in_level,
     dynamic_current_appliance,
     round_target_current,
@@ -277,8 +278,8 @@ def pv_excess_control(
         home_battery_level,
         min_home_battery_level,
         min_home_battery_level_start,
-        zero_feed_in, 
-        zero_feed_in_load, 
+        zero_feed_in,
+        zero_feed_in_load,
         zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
@@ -347,8 +348,8 @@ class PvExcessControl:
         home_battery_level,
         min_home_battery_level,
         min_home_battery_level_start,
-        zero_feed_in, 
-        zero_feed_in_load, 
+        zero_feed_in,
+        zero_feed_in_load,
         zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
@@ -397,7 +398,7 @@ class PvExcessControl:
         PvExcessControl.zero_feed_in = bool(zero_feed_in)
         PvExcessControl.zero_feed_in_load = zero_feed_in_load
         PvExcessControl.zero_feed_in_level = float(zero_feed_in_level)
-                     
+
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.round_target_current = bool(round_target_current)
         inst.deactivating_current = bool(deactivating_current)
@@ -1043,9 +1044,12 @@ class PvExcessControl:
                     and home_battery_level is not None
                     and home_battery_level > PvExcessControl.zero_feed_in_level
                     and export_pwr_state == 0
-                    and (int(pv_power_state - load_power_state) < PvExcessControl.zero_feed_in_load)
+                    and (
+                        int(pv_power_state - load_power_state)
+                        < PvExcessControl.zero_feed_in_load
+                    )
                 ):
-                    ## recalc the average to forecast best case planned_excess.    
+                    ## recalc the average to forecast best case planned_excess.
                     if PvExcessControl.solar_production_forecast:
                         remaining_forecast = _get_num_state(
                             PvExcessControl.solar_production_forecast, return_on_error=0
@@ -1070,7 +1074,7 @@ class PvExcessControl:
                     log.debug(
                         f"Battery charged - planned excess calc:  {planned_excess}"
                     )
-                else: 
+                else:
                     excess_pwr = int(pv_power_state - load_power_state)
 
         except Exception as e:
