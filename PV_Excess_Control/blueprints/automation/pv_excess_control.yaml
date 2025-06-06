@@ -219,8 +219,7 @@ blueprint:
     zero_feed_in:
       name: "Zero Feed In"
       description: >
-        If zero feed in activated and battery is nearly full. Calculate remaining
-        solar production forecase until sunset as pv power is reduced to load power.
+        If you have a zero feed in installation use solar production forecast instead of pure pv power.
 
         **[WARNING]**
 
