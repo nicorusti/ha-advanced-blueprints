@@ -1076,7 +1076,6 @@ class PvExcessControl:
                     )
                 else:
                     excess_pwr = int(pv_power_state - load_power_state)
-
         except Exception as e:
             log.error(f"Could not update Export/PV history!: {e}")
             return
