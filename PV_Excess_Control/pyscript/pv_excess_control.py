@@ -1042,7 +1042,10 @@ class PvExcessControl:
                 if (
                     PvExcessControl.zero_feed_in
                     and (
-                        (home_battery_level is not None and home_battery_level > PvExcessControl.zero_feed_in_level)
+                        (
+                            home_battery_level is not None
+                            and home_battery_level > PvExcessControl.zero_feed_in_level
+                        )
                         or home_battery_level is None
                     )
                     and export_pwr_state == 0

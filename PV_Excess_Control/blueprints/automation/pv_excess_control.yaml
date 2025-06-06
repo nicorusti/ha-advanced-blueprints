@@ -225,10 +225,10 @@ blueprint:
         **[WARNING]**
 
         - **This sensor must be the same for all your created automations based on this blueprint!**
-      
+
         **[NOTE]**
 
-        - **solar production forecast** must be filled    
+        - **solar production forecast** must be filled
       default: False
       selector:
         boolean:
@@ -236,28 +236,28 @@ blueprint:
     zero_feed_in_load:
       name: "Zero Feed In - Load"
       description: >
-        This parameter defines the maximum allowed difference between actual PV power 
-        production and current power consumption when the battery is fully charged 
-        (SoC defined with *zero_feed_in_level*). Its purpose is to ignore small surplus values caused by system 
-        inefficiencies or inverter standby consumption, and to avoid false positives in 
+        This parameter defines the maximum allowed difference between actual PV power
+        production and current power consumption when the battery is fully charged
+        (SoC defined with *zero_feed_in_level*). Its purpose is to ignore small surplus values caused by system
+        inefficiencies or inverter standby consumption, and to avoid false positives in
         PV production detection.
 
         Recommended setting:
-        Set this value to approximately twice the typical difference observed when the 
+        Set this value to approximately twice the typical difference observed when the
         battery is full and PV production slightly exceeds the load.
         Typical values: 100 to 400 W
 
         Example:
-        If your system load is 500 W and PV shows 600 W when the battery is full, the 
+        If your system load is 500 W and PV shows 600 W when the battery is full, the
         difference is 100 W → set the threshold to 200 W.
 
         **[WARNING]**
 
         - **This sensor must be the same for all your created automations based on this blueprint!**
-      
+
         **[NOTE]**
 
-        - **zero_feed_in** must be activated  
+        - **zero_feed_in** must be activated
       default: 300
       selector:
         number:
@@ -275,7 +275,7 @@ blueprint:
         **[WARNING]**
 
         - **This sensor must be the same for all your created automations based on this blueprint!**
-      
+
         **[NOTE]**
 
         - **zero_feed_in** must be activated
