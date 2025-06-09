@@ -339,8 +339,8 @@ blueprint:
 
         **[NOTE]**
 
-        - If you do not have zero_feed_in option enabled (you're exporting excess power to grid), leave this field empty. 
-        
+        - If you do not have zero_feed_in option enabled (you're exporting excess power to grid), leave this field empty.
+
       default:
       selector:
         entity:

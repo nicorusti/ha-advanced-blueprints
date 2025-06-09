@@ -393,7 +393,9 @@ class PvExcessControl:
         PvExcessControl.import_export_power = import_export_power
         PvExcessControl.home_battery_capacity = home_battery_capacity
         PvExcessControl.solar_production_forecast = solar_production_forecast
-        PvExcessControl.solar_production_forecast_this_hour = solar_production_forecast_this_hour
+        PvExcessControl.solar_production_forecast_this_hour = (
+            solar_production_forecast_this_hour
+        )
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
         PvExcessControl.min_home_battery_level_start = bool(
@@ -1062,10 +1064,13 @@ class PvExcessControl:
                     ## recalc the average to forecast best case planned_excess.
                     if PvExcessControl.solar_production_forecast_this_hour:
                         remaining_hour_forecast = _get_num_state(
-                            PvExcessControl.solar_production_forecast_this_hour, return_on_error=0
+                            PvExcessControl.solar_production_forecast_this_hour,
+                            return_on_error=0,
                         )
-                        excess_pwr = (remaining_hour_forecast  - load_power)
-                        log.debug(f"Zero feed in active, excess calc based on current hour solar forecast. excess calc: {excess_pwr}")                                  
+                        excess_pwr = remaining_hour_forecast - load_power
+                        log.debug(
+                            f"Zero feed in active, excess calc based on current hour solar forecast. excess calc: {excess_pwr}"
+                        )
                     elif PvExcessControl.solar_production_forecast:
                         remaining_forecast = _get_num_state(
                             PvExcessControl.solar_production_forecast, return_on_error=0
@@ -1079,11 +1084,20 @@ class PvExcessControl:
                         )
                         # Calc values based on separate sensors
                         remaining_usage = time_of_sunset * load_power / 1000
-                        excess_pwr = ( (remaining_forecast - remaining_usage) / time_of_sunset * 1000 * 1.2 )                    
-                        log.debug(f"Zero feed in active, excess calc based on linear forecast of excess until dusk. excess calc: {excess_pwr}")
+                        excess_pwr = (
+                            (remaining_forecast - remaining_usage)
+                            / time_of_sunset
+                            * 1000
+                            * 1.2
+                        )
+                        log.debug(
+                            f"Zero feed in active, excess calc based on linear forecast of excess until dusk. excess calc: {excess_pwr}"
+                        )
                     else:
                         excess_pwr = 0
-                        log.debug(f"Zero feed in active, but no solar production forecast configured. Zeroing excess calc; excess calc: {excess_pwr}")
+                        log.debug(
+                            f"Zero feed in active, but no solar production forecast configured. Zeroing excess calc; excess calc: {excess_pwr}"
+                        )
                 else:
                     excess_pwr = int(pv_power_state - load_power_state)
                     log.debug(f"planned excess calc:  {excess_pwr}")
@@ -1301,11 +1315,12 @@ class PvExcessControl:
                 self.switch_off(inst)
             return True
         else:
-           log.debug(
+            log.debug(
                 f"Debug force battery values (OFF): {capacity=} kWh|{remaining_capacity=} kWh|{remaining_forecast=} kWh| "
                 f"{kwh_offset=} kWh"
-                )
-           return False
+            )
+            return False
+
     def _force_minimum_runtime(self, inst, current_run_time, avg_excess_power):
         """
         Calculates if the appliance should be force turned on in case the remaining solar production forecast is not fully sufficient to run loads and
