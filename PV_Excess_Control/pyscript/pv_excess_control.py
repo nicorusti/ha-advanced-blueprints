@@ -739,6 +739,9 @@ class PvExcessControl:
                                 * inst.phases
                             )
                             # "restart" history by subtracting power difference from each history value within the specified time frame
+                            log.info(
+                                f"{inst.log_prefix} Adjusting power history by {-diff_power}W due to increasing dynamic current of appliance from {prev_set_amps}A to {target_current}A per phase."
+                            )
                             self._adjust_pwr_history(inst, -diff_power)
                         inst.previous_current_buffer = actual_current
 
@@ -781,6 +784,9 @@ class PvExcessControl:
                             inst.switch_interval_counter = 0
                             log.info(f"{inst.log_prefix} Switched on appliance.")
                             # "restart" history by subtracting defined power from each history value within the specified time frame
+                            log.info(
+                                f"{inst.log_prefix} Adjusting power history by {-defined_power}W due to start of appliance"
+                            )
                             self._adjust_pwr_history(inst, -defined_power)
                             task.sleep(1)
                             if inst.dynamic_current_appliance:
@@ -961,6 +967,9 @@ class PvExcessControl:
                                     f"which is now {prev_consumption_sum} W."
                                 )
                                 # "restart" history by adding defined power to each history value within the specified time frame
+                                log.info(
+                                    f"{inst.log_prefix} Adjusting power history by {diff_power}W due to dynamic redution of appliance power"
+                                )
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
                                 if diff_current_off >= -(
@@ -1257,6 +1266,9 @@ class PvExcessControl:
             task.sleep(1)
             inst.switch_interval_counter = 0
             # "restart" history by adding defined power to each history value within the specified time frame
+            log.info(
+                f"{inst.log_prefix} Adjusting power history by {power_consumption}W due to appliance switch off"
+            )
             self._adjust_pwr_history(inst, power_consumption)
             return power_consumption
 
@@ -1312,7 +1324,7 @@ class PvExcessControl:
             for x in PvExcessControl.load_history[-inst.appliance_switch_interval :]
         ]
         log.debug(
-            f"Adjusted load (total load - appliacnce load) history: {PvExcessControl.load_history}"
+            f"Adjusted load (total load - appliance load) history: {PvExcessControl.load_history}"
         )
 
     def _force_charge_battery(self, avg_load_power, kwh_offset: float = 2):
@@ -1359,7 +1371,8 @@ class PvExcessControl:
                 )
             ).items():
                 inst = e["instance"]
-                self.switch_off(inst)
+                if _get_state(inst.appliance_switch) == "on":
+                    self.switch_off(inst)
             return True
         else:
             log.debug(
