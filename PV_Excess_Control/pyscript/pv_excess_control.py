@@ -523,7 +523,7 @@ class PvExcessControl:
                     continue
 
                 # calculate average load power
-                # TODO - load history should be configureable, as it is not dependant of appliance switch interval
+                # TODO - load history should be configurable, as it is not dependent of appliance switch interval
                 # for now as "beta", I'm setting it as appliance_switch_in
 
                 avg_load_power = int(
@@ -1099,7 +1099,7 @@ class PvExcessControl:
                         )
                         # Calc values based on separate sensors
                         remaining_usage = time_of_sunset * load_power_state / 1000
-                        ## todo create variable for power factor (1.2) to deal with non-linear PV production torwards dusk
+                        ## todo create variable for power factor (1.2) to deal with non-linear PV production towards dusk
                         excess_pwr = (
                             (remaining_forecast - remaining_usage)
                             / time_of_sunset
