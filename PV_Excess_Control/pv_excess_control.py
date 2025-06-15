@@ -1039,7 +1039,7 @@ class PvExcessControl:
                 current_appliance_pwr_load = 0
             """
             Go through all appliances to get actual total appliance power
-            """    		
+            """
             for e in PvExcessControl.instances.values():
                 inst = e["instance"]
                 if _get_state(inst.appliance_switch) == "on":
@@ -1077,7 +1077,7 @@ class PvExcessControl:
                     )
                 export_pwr = int(export_pwr_state)
                 load_pwr = int(load_power_state) - int(current_appliance_pwr_load)
-                
+
                 ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
                 if (
