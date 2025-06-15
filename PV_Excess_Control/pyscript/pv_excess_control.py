@@ -1036,6 +1036,21 @@ class PvExcessControl:
         Update Export and PV history
         """
         try:
+            current_appliance_pwr_load = 0
+            pv_power_state = _get_num_state(PvExcessControl.pv_power)
+            """
+            Go through all appliances to get actual total appliance power
+            """
+            for e in PvExcessControl.instances.values():
+                inst = e["instance"]
+                if _get_state(inst.appliance_switch) == "on":
+                    current_appliance_pwr_load = (
+                        current_appliance_pwr_load + _get_num_state(inst.actual_power)
+                    )
+            log.debug(
+                f"Update_pv_history actual total appliance power: {current_appliance_pwr_load}W"
+            )
+
             if PvExcessControl.import_export_power:
                 # Calc values based on combined import/export power sensor
                 import_export_state = _get_num_state(
@@ -1049,11 +1064,11 @@ class PvExcessControl:
                 # load_pwr = pv_pwr + import_export
                 export_pwr = abs(min(0, import_export))
                 excess_pwr = -import_export
-                load_pwr = pv_pwr + excess_pwr
+                load_pwr = int(pv_power_state) - excess_pwr - int(current_appliance_pwr_load)
+                
             else:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
-                pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if (
@@ -1066,7 +1081,7 @@ class PvExcessControl:
                         f"{PvExcessControl.load_power=} = {export_pwr_state=} | {pv_power_state=} | {load_power_state=}"
                     )
                 export_pwr = int(export_pwr_state)
-                load_pwr = int(load_power_state)
+                load_pwr = int(load_power_state) - int(current_appliance_pwr_load)
                 ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
                 if (
@@ -1319,13 +1334,7 @@ class PvExcessControl:
         log.debug(
             f"Adjusted PV Excess (solar power - load power) history: {PvExcessControl.pv_history}"
         )
-        PvExcessControl.load_history[-inst.appliance_switch_interval :] = [
-            x - value
-            for x in PvExcessControl.load_history[-inst.appliance_switch_interval :]
-        ]
-        log.debug(
-            f"Adjusted load (total load - appliance load) history: {PvExcessControl.load_history}"
-        )
+
 
     def _force_charge_battery(self, avg_load_power, kwh_offset: float = 2):
         """
