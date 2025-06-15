@@ -1038,9 +1038,8 @@ class PvExcessControl:
         try:
             current_appliance_pwr_load = 0
             pv_power_state = _get_num_state(PvExcessControl.pv_power)
-            """
-            Go through all appliances to get actual total appliance power
-            """
+            # Go through all appliances to get actual total appliance power
+
             for e in PvExcessControl.instances.values():
                 inst = e["instance"]
                 if _get_state(inst.appliance_switch) == "on":
