@@ -1063,10 +1063,8 @@ class PvExcessControl:
                 # load_pwr = pv_pwr + import_export
                 export_pwr = abs(min(0, import_export))
                 excess_pwr = -import_export
-                load_pwr = (
-                    int(pv_power_state) - excess_pwr - int(current_appliance_pwr_load)
-                )
-
+                load_pwr = int(pv_power_state) - excess_pwr - int(current_appliance_pwr_load)
+                
             else:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
@@ -1335,6 +1333,7 @@ class PvExcessControl:
         log.debug(
             f"Adjusted PV Excess (solar power - load power) history: {PvExcessControl.pv_history}"
         )
+
 
     def _force_charge_battery(self, avg_load_power, kwh_offset: float = 2):
         """
