@@ -255,6 +255,7 @@ def pv_excess_control(
     import_export_power,
     home_battery_capacity,
     solar_production_forecast,
+    solar_production_forecast_this_hour,
     time_of_sunset,
     appliance_once_only,
     appliance_maximum_run_time,
@@ -299,6 +300,7 @@ def pv_excess_control(
         import_export_power,
         home_battery_capacity,
         solar_production_forecast,
+        solar_production_forecast_this_hour,
         time_of_sunset,
         appliance_once_only,
         appliance_maximum_run_time,
@@ -330,6 +332,9 @@ class PvExcessControl:
     # PV Excess history (PV power minus load power)
     pv_history = [0] * 60
     pv_history_buffer = []
+    # Load history (PV power minus load power)
+    load_history = [0] * 60
+    load_history_buffer = []
     # Minimum excess power in watts. If the average min_excess_power at the specified appliance switch interval is greater than the actual
     #  excess power, the appliance with the lowest priority will be shut off.
     #  NOTE: Should be slightly negative, to compensate for inaccurate power corrections
@@ -369,6 +374,7 @@ class PvExcessControl:
         import_export_power,
         home_battery_capacity,
         solar_production_forecast,
+        solar_production_forecast_this_hour,
         time_of_sunset,
         appliance_once_only,
         appliance_maximum_run_time,
@@ -390,6 +396,9 @@ class PvExcessControl:
         PvExcessControl.import_export_power = import_export_power
         PvExcessControl.home_battery_capacity = home_battery_capacity
         PvExcessControl.solar_production_forecast = solar_production_forecast
+        PvExcessControl.solar_production_forecast_this_hour = (
+            solar_production_forecast_this_hour
+        )
         PvExcessControl.time_of_sunset = time_of_sunset
         PvExcessControl.min_home_battery_level = float(min_home_battery_level)
         PvExcessControl.min_home_battery_level_start = bool(
@@ -513,6 +522,16 @@ class PvExcessControl:
 
                     continue
 
+                # calculate average load power
+                # TODO - load history should be configurable, as it is not dependent of appliance switch interval
+                # for now as "beta", I'm setting it as appliance_switch_in
+
+                avg_load_power = int(
+                    sum(PvExcessControl.load_history[-inst.appliance_switch_interval :])
+                    / max(1, inst.appliance_switch_interval)
+                )
+                log.debug(f"{inst.log_prefix} Avg_load_power: {avg_load_power}).")
+
                 # check min bat lvl and decide whether to regard export power or solar power minus load power
                 if PvExcessControl.home_battery_level is None:
                     home_battery_level = 100
@@ -550,7 +569,7 @@ class PvExcessControl:
 
                 elif (
                     home_battery_level >= PvExcessControl.min_home_battery_level
-                    or not self._force_charge_battery()
+                    or not self._force_charge_battery(avg_load_power)
                 ):
                     # home battery charge is high enough to direct solar power to appliances, if solar power is higher than load power
                     # calc avg based on pv excess (solar power - load power) according to specified window
@@ -720,6 +739,9 @@ class PvExcessControl:
                                 * inst.phases
                             )
                             # "restart" history by subtracting power difference from each history value within the specified time frame
+                            log.info(
+                                f"{inst.log_prefix} Adjusting power history by {-diff_power}W due to increasing dynamic current of appliance from {prev_set_amps}A to {target_current}A per phase."
+                            )
                             self._adjust_pwr_history(inst, -diff_power)
                         inst.previous_current_buffer = actual_current
 
@@ -762,6 +784,9 @@ class PvExcessControl:
                             inst.switch_interval_counter = 0
                             log.info(f"{inst.log_prefix} Switched on appliance.")
                             # "restart" history by subtracting defined power from each history value within the specified time frame
+                            log.info(
+                                f"{inst.log_prefix} Adjusting power history by {-defined_power}W due to start of appliance"
+                            )
                             self._adjust_pwr_history(inst, -defined_power)
                             task.sleep(1)
                             if inst.dynamic_current_appliance:
@@ -942,6 +967,9 @@ class PvExcessControl:
                                     f"which is now {prev_consumption_sum} W."
                                 )
                                 # "restart" history by adding defined power to each history value within the specified time frame
+                                log.info(
+                                    f"{inst.log_prefix} Adjusting power history by {diff_power}W due to dynamic redution of appliance power"
+                                )
                                 self._adjust_pwr_history(inst, diff_power)
                             else:
                                 if diff_current_off >= -(
@@ -1008,6 +1036,20 @@ class PvExcessControl:
         Update Export and PV history
         """
         try:
+            current_appliance_pwr_load = 0
+            pv_power_state = _get_num_state(PvExcessControl.pv_power)
+            # Go through all appliances to get actual total appliance power
+
+            for e in PvExcessControl.instances.values():
+                inst = e["instance"]
+                if _get_state(inst.appliance_switch) == "on":
+                    current_appliance_pwr_load = (
+                        current_appliance_pwr_load + _get_num_state(inst.actual_power)
+                    )
+            log.debug(
+                f"Update_pv_history actual total appliance power: {current_appliance_pwr_load}W"
+            )
+
             if PvExcessControl.import_export_power:
                 # Calc values based on combined import/export power sensor
                 import_export_state = _get_num_state(
@@ -1021,10 +1063,13 @@ class PvExcessControl:
                 # load_pwr = pv_pwr + import_export
                 export_pwr = abs(min(0, import_export))
                 excess_pwr = -import_export
+                load_pwr = (
+                    int(pv_power_state) - excess_pwr - int(current_appliance_pwr_load)
+                )
+
             else:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
-                pv_power_state = _get_num_state(PvExcessControl.pv_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
                 home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
                 if (
@@ -1037,6 +1082,7 @@ class PvExcessControl:
                         f"{PvExcessControl.load_power=} = {export_pwr_state=} | {pv_power_state=} | {load_power_state=}"
                     )
                 export_pwr = int(export_pwr_state)
+                load_pwr = int(load_power_state) - int(current_appliance_pwr_load)
                 ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
                 if (
@@ -1054,37 +1100,55 @@ class PvExcessControl:
                         < PvExcessControl.zero_feed_in_load
                     )
                 ):
+                    # load_power = _get_num_state(PvExcessControl.load_power)
                     ## recalc the average to forecast best case planned_excess.
-                    if PvExcessControl.solar_production_forecast:
+                    if PvExcessControl.solar_production_forecast_this_hour:
+                        remaining_hour_forecast = _get_num_state(
+                            PvExcessControl.solar_production_forecast_this_hour,
+                            return_on_error=0,
+                        )
+                        excess_pwr = remaining_hour_forecast - load_power_state
+                        log.debug(
+                            f"Zero feed in active, excess calc based on current hour solar forecast. excess calc: {excess_pwr}"
+                        )
+                    elif PvExcessControl.solar_production_forecast:
                         remaining_forecast = _get_num_state(
                             PvExcessControl.solar_production_forecast, return_on_error=0
                         )
+                        # Calculate remaining overall load power usage until sunset, assuming current load
+                        sunset_string = _get_state(PvExcessControl.time_of_sunset)
+                        sunset_time = datetime.datetime.fromisoformat(sunset_string)
+                        time_now = datetime.datetime.now(datetime.timezone.utc)
+                        time_of_sunset = (sunset_time - time_now).total_seconds() / (
+                            60 * 60
+                        )
+                        # Calc values based on separate sensors
+                        remaining_usage = time_of_sunset * load_power_state / 1000
+                        ## todo create variable for power factor (1.2) to deal with non-linear PV production towards dusk
+                        excess_pwr = (
+                            (remaining_forecast - remaining_usage)
+                            / time_of_sunset
+                            * 1000
+                            * 1.2
+                        )
+                        log.debug(
+                            f"Zero feed in active, excess calc based on linear forecast of excess until dusk. excess calc: {excess_pwr}"
+                        )
                     else:
-                        remaining_forecast = 0
-
-                    # Calculate remaining overall load power usage until sunset, assuming current load
-                    sunset_string = _get_state(PvExcessControl.time_of_sunset)
-                    sunset_time = datetime.datetime.fromisoformat(sunset_string)
-                    time_now = datetime.datetime.now(datetime.timezone.utc)
-                    time_of_sunset = (sunset_time - time_now).total_seconds() / (
-                        60 * 60
-                    )
-                    # Calc values based on separate sensors
-                    load_power = _get_num_state(PvExcessControl.load_power)
-                    remaining_usage = time_of_sunset * load_power / 1000
-
-                    excess_pwr = (
-                        (remaining_forecast - remaining_usage) / time_of_sunset * 1000
-                    )
-                    log.debug(f"Battery charged - planned excess calc:  {excess_pwr}")
+                        excess_pwr = 0
+                        log.debug(
+                            f"Zero feed in active, but no solar production forecast configured. Zeroing excess calc; excess calc: {excess_pwr}"
+                        )
                 else:
                     excess_pwr = int(pv_power_state - load_power_state)
+                    log.debug(f"planned excess calc:  {excess_pwr}")
         except Exception as e:
             log.error(f"Could not update Export/PV history!: {e}")
             return
         else:
             PvExcessControl.export_history_buffer.append(export_pwr)
             PvExcessControl.pv_history_buffer.append(excess_pwr)
+            PvExcessControl.load_history_buffer.append(load_pwr)
 
         # log.debug(f'Export History Buffer: {PvExcessControl.export_history_buffer}')
         # log.debug(f'PV Excess (PV Power - Load Power) History Buffer: {PvExcessControl.pv_history_buffer}')
@@ -1095,6 +1159,8 @@ class PvExcessControl:
                 PvExcessControl.export_history.pop(0)
             if len(PvExcessControl.pv_history) >= 60:
                 PvExcessControl.pv_history.pop(0)
+            if len(PvExcessControl.load_history) >= 60:
+                PvExcessControl.load_history.pop(0)
             # calc avg of buffer
             export_avg = round(
                 sum(PvExcessControl.export_history_buffer)
@@ -1104,16 +1170,23 @@ class PvExcessControl:
                 sum(PvExcessControl.pv_history_buffer)
                 / len(PvExcessControl.pv_history_buffer)
             )
+            load_avg = round(
+                sum(PvExcessControl.load_history_buffer)
+                / len(PvExcessControl.load_history_buffer)
+            )
             # add avg to history
             PvExcessControl.export_history.append(export_avg)
             PvExcessControl.pv_history.append(excess_avg)
+            PvExcessControl.load_history.append(load_avg)
             log.debug(f"Export History: {PvExcessControl.export_history}")
             log.debug(
                 f"PV Excess (PV Power - Load Power) History: {PvExcessControl.pv_history}"
             )
+            log.debug(f"Load History: {PvExcessControl.load_history}")
             # clear buffer
             PvExcessControl.export_history_buffer = []
             PvExcessControl.pv_history_buffer = []
+            PvExcessControl.load_history_buffer = []
 
     def sanity_check(self) -> bool:
         if (
@@ -1209,6 +1282,9 @@ class PvExcessControl:
             task.sleep(1)
             inst.switch_interval_counter = 0
             # "restart" history by adding defined power to each history value within the specified time frame
+            log.info(
+                f"{inst.log_prefix} Adjusting power history by {power_consumption}W due to appliance switch off"
+            )
             self._adjust_pwr_history(inst, power_consumption)
             return power_consumption
 
@@ -1240,12 +1316,15 @@ class PvExcessControl:
 
     def _adjust_pwr_history(self, inst, value):
         log.debug(f"Adjusting power history by {value}.")
-        log.debug(f"Export history: {PvExcessControl.export_history}")
-        PvExcessControl.export_history[-inst.appliance_switch_interval :] = [
-            max(0, x + value)
-            for x in PvExcessControl.export_history[-inst.appliance_switch_interval :]
-        ]
-        log.debug(f"Adjusted export history: {PvExcessControl.export_history}")
+        if not (PvExcessControl.zero_feed_in):
+            log.debug(f"Export history: {PvExcessControl.export_history}")
+            PvExcessControl.export_history[-inst.appliance_switch_interval :] = [
+                max(0, x + value)
+                for x in PvExcessControl.export_history[
+                    -inst.appliance_switch_interval :
+                ]
+            ]
+            log.debug(f"Adjusted export history: {PvExcessControl.export_history}")
         log.debug(
             f"PV Excess (solar power - load power) history: {PvExcessControl.pv_history}"
         )
@@ -1257,7 +1336,7 @@ class PvExcessControl:
             f"Adjusted PV Excess (solar power - load power) history: {PvExcessControl.pv_history}"
         )
 
-    def _force_charge_battery(self, kwh_offset: float = 1):
+    def _force_charge_battery(self, avg_load_power, kwh_offset: float = 2):
         """
         Calculates if the remaining solar power forecast is enough to ensure the specified min. home battery level is reached at the end
         of the day.
@@ -1265,8 +1344,19 @@ class PvExcessControl:
                             triggering of a force charge
         :return:            True if force charge is necessary, False otherwise
         """
+        #        log.debug(
+        #                f"Force battery charge necessary: avg excess power {PvExcessControl.avg_excess_power=}"
+        #        )
         if PvExcessControl.home_battery_level is None:
             return False
+        sunset_string = _get_state(PvExcessControl.time_of_sunset)
+        sunset_time = datetime.datetime.fromisoformat(sunset_string)
+        time_now = datetime.datetime.now(datetime.timezone.utc)
+        time_of_sunset = (sunset_time - time_now).total_seconds() / (60 * 60)
+        # Calc values based on separate sensors
+        remaining_usage = time_of_sunset * avg_load_power / 1000
+
+        log.debug(f"_force_charge_battery remaining_usage: {remaining_usage}")
 
         capacity = PvExcessControl.home_battery_capacity
         remaining_capacity = capacity - (
@@ -1277,10 +1367,10 @@ class PvExcessControl:
         remaining_forecast = _get_num_state(
             PvExcessControl.solar_production_forecast, return_on_error=0
         )
-        if remaining_forecast <= remaining_capacity + kwh_offset:
+        if remaining_forecast <= remaining_capacity + kwh_offset + remaining_usage:
             log.debug(
-                f"Force battery charge necessary: {capacity=} kWh|{remaining_capacity=} kWh|{remaining_forecast=} kWh| "
-                f"{kwh_offset=} kWh"
+                f"Force battery charge necessary (ON): {capacity=} kWh|{remaining_capacity=} kWh|{remaining_forecast=} kWh| "
+                f"{kwh_offset=} kWh | {remaining_usage=} kWh "
             )
             # go through appliances lowest to highest priority, and try switching them off individually
             for a_id, e in dict(
@@ -1290,9 +1380,15 @@ class PvExcessControl:
                 )
             ).items():
                 inst = e["instance"]
-                self.switch_off(inst)
+                if _get_state(inst.appliance_switch) == "on":
+                    self.switch_off(inst)
             return True
-        return False
+        else:
+            log.debug(
+                f"Debug force battery values (OFF): {capacity=} kWh|{remaining_capacity=} kWh|{remaining_forecast=} kWh| "
+                f"{kwh_offset=} kWh | {remaining_usage=} kWh "
+            )
+            return False
 
     def _force_minimum_runtime(self, inst, current_run_time, avg_excess_power):
         """
