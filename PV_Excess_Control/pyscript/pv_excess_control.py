@@ -762,7 +762,7 @@ class PvExcessControl:
                                 f"{inst.log_prefix} Cannot switch on appliance, because appliance switch interval is not reached "
                                 f"({inst.switch_interval_counter}/{inst.appliance_switch_interval})."
                             )
-                    elif (not switched_off_appliance_to_switch_on_higher_prioritized_one) and (self.calculate_pwr_reducible(inst.appliance_priority) + avg_excess_power) >= (defined_power if inst.appliance_priority <= 500 else 0):
+                    elif (not switched_off_appliance_to_switch_on_higher_prioritized_one) and (self.calculate_pwr_reducible(inst.appliance_priority) + avg_excess_power) >= (defined_power if inst.appliance_priority <= 1000 else 0):
                         # excess power is sufficient by switching off lower prioritized appliance(s)
                         if inst.switch_interval_counter >= inst.appliance_switch_interval:
                             self.switch_on(inst)
