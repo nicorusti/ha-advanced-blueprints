@@ -63,10 +63,6 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 - This situatin is tricky as the normal logic cannot detect excess of power to control optional loads.
 - The zero feed in option attempts to detect the condition and enable appliances after the battery charge threshold is archieved (Zero Feed In - Battery Level). It does this by changing decection logic and relying on solar forecast produciton, therefore a working installation of solcast is required.
 
-<<<<<<< HEAD
-\*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
-=======
-
 \*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
 
 ### Home battery charging
