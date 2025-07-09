@@ -13,8 +13,7 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 :white*check_mark: Supports dynamic current control (e.g. for wallboxes)\
 :white_check_mark: Define min. and max. current for appliances supporting dynamic current control\
 :white_check_mark: Supports one- and three-phase appliances\
-:white_check_mark: Supports \_Only-Switch-On* devices like washing machines or dishwashers
-
+:white_check_mark: Supports \_Only-Switch-On\* devices like washing machines or dishwashers
 
 ## Prerequisites
 
@@ -60,14 +59,11 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 
 ### Zero feed in option
 
-- Installations where hybrid inverters does not inject energy onto the grid** (for ex. Growatt SPF series) have a particular condition where once the battery is fully charged, the inverter has to diminish solar power production to match the current energy load. 
-- This situatin is tricky as the normal logic cannot detect excess of power to control optional loads. 
-- The zero feed in option attempts to detect the condition and enable appliances after the battery charge threshold is archieved (Zero Feed In - Battery Level). It does this by changing decection logic and relying on solar forecast produciton, therefore a working installation of solcast is required. 
+- Installations where hybrid inverters does not inject energy onto the grid\*\* (for ex. Growatt SPF series) have a particular condition where once the battery is fully charged, the inverter has to diminish solar power production to match the current energy load.
+- This situatin is tricky as the normal logic cannot detect excess of power to control optional loads.
+- The zero feed in option attempts to detect the condition and enable appliances after the battery charge threshold is archieved (Zero Feed In - Battery Level). It does this by changing decection logic and relying on solar forecast produciton, therefore a working installation of solcast is required.
 
-
-
-
-**The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation. 
+\*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
 
 ### Update
 
@@ -75,7 +71,7 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 - After that, manually execute the automation once to send the changes to the python module
 
 ### Deactivation
-    
+
 - To deactivate the auto-control of a single appliance, simply deactivate the related automation.
 
 ### Deletion
