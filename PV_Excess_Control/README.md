@@ -67,15 +67,14 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 \*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
 =======
 
-**The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation. 
+\*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
 
 ### Home battery charging
 
-The logic prioritizes the best it can to have battery charged to the threshold level set by the end of the day. 
-Given changes in energy load, solar forecast or appliance demands(ex appliance minimum daily runtime) the desired threshold might not be archieved. 
+The logic prioritizes the best it can to have battery charged to the threshold level set by the end of the day.
+Given changes in energy load, solar forecast or appliance demands(ex appliance minimum daily runtime) the desired threshold might not be archieved.
 
 However, under a fully working and tuned setup, the automation is almost always able to reach desired battery charge with a marging of 5-10% error.
-
 
 ### Update
 
