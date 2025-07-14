@@ -1484,7 +1484,7 @@ class PvExcessControl:
         pwr_reducible = 0
         for a_id, e in PvExcessControl.instances.copy().items():
             inst = e['instance']
-            if not self.automation_activated(inst.automation_id):
+            if not self.automation_activated(inst.automation_id, inst.enabled):
                 continue
             # Do not turn off only-on-appliances
             if inst.appliance_on_only:
