@@ -704,7 +704,9 @@ class PvExcessControl:
                                 max(
                                     inst.min_current,
                                     min(
-                                        ( actual_current  + diff_current ) * (PvExcessControl.grid_voltage * inst.phases), inst.max_current
+                                        (actual_current + diff_current)
+                                        * (PvExcessControl.grid_voltage * inst.phases),
+                                        inst.max_current,
                                     ),
                                 ),
                             )
@@ -812,18 +814,30 @@ class PvExcessControl:
                                 f"{inst.log_prefix} Cannot switch on appliance, because appliance switch interval is not reached "
                                 f"({inst.switch_interval_counter}/{inst.appliance_switch_interval})."
                             )
-                    elif (not switched_off_appliance_to_switch_on_higher_prioritized_one) and (self.calculate_pwr_reducible(inst.appliance_priority) + avg_excess_power) >= (defined_power if inst.appliance_priority <= 1000 else 0):
+                    elif (
+                        not switched_off_appliance_to_switch_on_higher_prioritized_one
+                    ) and (
+                        self.calculate_pwr_reducible(inst.appliance_priority)
+                        + avg_excess_power
+                    ) >= (defined_power if inst.appliance_priority <= 1000 else 0):
                         # excess power is sufficient by switching off lower prioritized appliance(s)
-                        if inst.switch_interval_counter >= inst.appliance_switch_interval:
+                        if (
+                            inst.switch_interval_counter
+                            >= inst.appliance_switch_interval
+                        ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
                             switched_off_appliance_to_switch_on_higher_prioritized_one = True
-                            log.info(f'{log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance.')
+                            log.info(
+                                f"{log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance."
+                            )
                             # "restart" history by subtracting defined power from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -defined_power)
                             task.sleep(1)
                             if inst.dynamic_current_appliance:
-                                _set_value(inst.appliance_current_set_entity, inst.min_current)
+                                _set_value(
+                                    inst.appliance_current_set_entity, inst.min_current
+                                )
                     else:
                         log.debug(
                             f"{inst.log_prefix} Average Excess power ({avg_excess_power} W) not high enough to switch on appliance with {defined_power} or appliance has high priority {inst.appliance_priority} or it didn't meet minimum runtime yet or minimum solar power percentage (to start) fits: {defined_power * inst.min_solar_percent}."
@@ -964,11 +978,13 @@ class PvExcessControl:
                                     ),
                                 )
                             elif inst.watt_target_current:
-                                  target_current = int(
+                                target_current = int(
                                     max(
-                                        inst.min_current, ( actual_current + diff_current ) * (PvExcessControl.grid_voltage * inst.phases)
+                                        inst.min_current,
+                                        (actual_current + diff_current)
+                                        * (PvExcessControl.grid_voltage * inst.phases),
                                     ),
-                                )   
+                                )
                             else:
                                 target_current = round(
                                     max(
@@ -1502,7 +1518,7 @@ class PvExcessControl:
         """
         pwr_reducible = 0
         for a_id, e in PvExcessControl.instances.copy().items():
-            inst = e['instance']
+            inst = e["instance"]
             if not self.automation_activated(inst.automation_id, inst.enabled):
                 continue
             # Do not turn off only-on-appliances
@@ -1513,10 +1529,12 @@ class PvExcessControl:
                 continue
             if inst.appliance_priority >= max_priority:
                 continue
-            if _get_state(inst.appliance_switch) != 'on':
+            if _get_state(inst.appliance_switch) != "on":
                 continue
             if inst.actual_power is None:
-                pwr_reducible += inst.defined_current * PvExcessControl.grid_voltage * inst.phases
+                pwr_reducible += (
+                    inst.defined_current * PvExcessControl.grid_voltage * inst.phases
+                )
             else:
                 pwr_reducible += _get_num_state(inst.actual_power)
 
