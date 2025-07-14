@@ -678,6 +678,7 @@ action:
       import_export_power: !input import_export_power
       home_battery_capacity: !input home_battery_capacity
       solar_production_forecast: !input solar_production_forecast
+      solar_production_forecast_this_hour: !input solar_production_forecast_this_hour
       time_of_sunset: !input time_of_sunset
       appliance_once_only: !input appliance_once_only
       appliance_maximum_run_time: !input appliance_maximum_run_time
