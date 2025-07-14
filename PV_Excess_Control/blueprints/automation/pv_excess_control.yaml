@@ -493,6 +493,14 @@ blueprint:
       selector:
         boolean:
 
+      watt_target_current:
+      name: "Target current in Watt"
+      description: >
+        Tick this box if your appliance only supports target currents  in Watt instead of A.
+      default: false
+      selector:
+        boolean:
+
     deactivating_current:
       name: "Wallbox Deactivation with current 0?"
       description: >
@@ -662,6 +670,7 @@ action:
       zero_feed_in_level: !input zero_feed_in_level
       dynamic_current_appliance: !input dynamic_current_appliance
       round_target_current: !input round_target_current
+      watt_target_current: !input watt_target_current
       deactivating_current: !input deactivating_current
       appliance_phases: !input appliance_phases
       min_current: !input min_current
