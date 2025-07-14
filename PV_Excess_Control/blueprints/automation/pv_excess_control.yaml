@@ -216,6 +216,77 @@ blueprint:
       selector:
         boolean:
 
+    zero_feed_in:
+      name: "Zero Feed In"
+      description: >
+        If you have a zero feed in installation use solar production forecast instead of pure pv power.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+
+        **[NOTE]**
+
+        - **solar production forecast** must be filled
+      default: False
+      selector:
+        boolean:
+
+    zero_feed_in_load:
+      name: "Zero Feed In - Load"
+      description: >
+        This parameter defines the maximum allowed difference between actual PV power
+        production and current power consumption when the battery is fully charged
+        (SoC defined with *zero_feed_in_level*). Its purpose is to ignore small surplus values caused by system
+        inefficiencies or inverter standby consumption, and to avoid false positives in
+        PV production detection.
+
+        Recommended setting:
+        Set this value to approximately twice the typical difference observed when the
+        battery is full and PV production slightly exceeds the load.
+        Typical values: 100 to 400 W
+
+        Example:
+        If your system load is 500 W and PV shows 600 W when the battery is full, the
+        difference is 100 W → set the threshold to 200 W.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+
+        **[NOTE]**
+
+        - **zero_feed_in** must be activated
+      default: 300
+      selector:
+        number:
+          min: 0
+          max: 10000
+          step: 1
+          unit_of_measurement: W
+
+    zero_feed_in_level:
+      name: "Zero Feed In - Battery Level"
+      description: >
+        The power level (in percent) of your home battery must be higher than this value
+        before starting consuming even with zero feed in.
+
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+
+        **[NOTE]**
+
+        - **zero_feed_in** must be activated
+        - value must be set if home battery is installed
+      default: 99
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+
     home_battery_capacity:
       name: "Home battery capacity"
       description: >
@@ -252,6 +323,24 @@ blueprint:
         **[NOTE]**
 
         - If your solar system is not coupled with a battery or if you are not enforcing a minimum appliance run time, leave this field empty
+      default:
+      selector:
+        entity:
+          domain: sensor
+          multiple: false
+
+    solar_production_forecast_this_hour:
+      name: "Solar production forecast for the current hour (Solcast or Forecast.Solar)"
+      description: >
+        Sensor which represents the solar forecast  for the current hour (in kWh). Will be used in case Zero_feed_in is active, to have a better estimation of  available PV power to be redirected to appliances.
+        **[WARNING]**
+
+        - **This sensor must be the same for all your created automations based on this blueprint!**
+
+        **[NOTE]**
+
+        - If you do not have zero_feed_in option enabled (you're exporting excess power to grid), leave this field empty.
+
       default:
       selector:
         entity:
@@ -568,6 +657,9 @@ action:
       home_battery_level: !input home_battery_level
       min_home_battery_level: !input min_home_battery_level
       min_home_battery_level_start: !input min_home_battery_level_start
+      zero_feed_in: !input zero_feed_in
+      zero_feed_in_load: !input zero_feed_in_load
+      zero_feed_in_level: !input zero_feed_in_level
       dynamic_current_appliance: !input dynamic_current_appliance
       round_target_current: !input round_target_current
       deactivating_current: !input deactivating_current
