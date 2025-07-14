@@ -60,17 +60,17 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 ### Zero feed in option
 
 - Installations where hybrid inverters does not inject energy onto the grid\*\* (for ex. Growatt SPF series) have a particular condition where once the battery is fully charged, the inverter has to diminish solar power production to match the current energy load.
-- This situatin is tricky as the normal logic cannot detect excess of power to control optional loads.
-- The zero feed in option attempts to detect the condition and enable appliances after the battery charge threshold is archieved (Zero Feed In - Battery Level). It does this by changing decection logic and relying on solar forecast produciton, therefore a working installation of solcast is required.
+- This situation is tricky as the normal logic cannot detect excess of power to control optional loads.
+- The zero feed in option attempts to detect the condition and enable appliances after the battery charge threshold is archived (Zero Feed In - Battery Level). It does this by changing decection logic and relying on solar forecast production, therefore a working installation of solcast is required.
 
 \*\*The condition does not happen with installations injecting energy onto the grid, as once the battery is full they should start exporting energy and it is detected by the automation.
 
 ### Home battery charging
 
 The logic prioritizes the best it can to have battery charged to the threshold level set by the end of the day.
-Given changes in energy load, solar forecast or appliance demands(ex appliance minimum daily runtime) the desired threshold might not be archieved.
+Given changes in energy load, solar forecast or appliance demands(ex appliance minimum daily runtime) the desired threshold might not be archived.
 
-However, under a fully working and tuned setup, the automation is almost always able to reach desired battery charge with a marging of 5-10% error.
+However, under a fully working and tuned setup, the automation is almost always able to reach desired battery charge with a margin of 5-10% error.
 
 ### Update
 
