@@ -493,7 +493,7 @@ blueprint:
       selector:
         boolean:
 
-      watt_target_current:
+    watt_target_current:
       name: "Target current in Watt"
       description: >
         Tick this box if your appliance only supports target currents  in Watt instead of A.
