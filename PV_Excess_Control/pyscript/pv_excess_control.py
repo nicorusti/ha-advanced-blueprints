@@ -814,7 +814,7 @@ class PvExcessControl:
                             inst.switch_interval_counter = 0
                             switched_off_appliance_to_switch_on_higher_prioritized_one = True
                             log.info(
-                                f"{log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance."
+                                f"{inst.log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance."
                             )
                             # "restart" history by subtracting defined power from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -defined_power)
