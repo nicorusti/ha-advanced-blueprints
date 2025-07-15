@@ -1068,8 +1068,17 @@ class PvExcessControl:
             for e in PvExcessControl.instances.values():
                 inst = e["instance"]
                 if _get_state(inst.appliance_switch) == "on":
+                    if inst.actual_power is None:
+                        power_consumption = (
+                            inst.defined_current
+                            * PvExcessControl.grid_voltage
+                            * inst.phases
+                        )
+                    else:
+                        power_consumption = _get_num_state(inst.actual_power)
+
                     current_appliance_pwr_load = (
-                        current_appliance_pwr_load + _get_num_state(inst.actual_power)
+                        current_appliance_pwr_load + power_consumption
                     )
             log.debug(
                 f"Update_pv_history actual total appliance power: {current_appliance_pwr_load}W"
