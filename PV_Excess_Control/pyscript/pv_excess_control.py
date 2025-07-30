@@ -1105,7 +1105,12 @@ class PvExcessControl:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
-                home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
+                if PvExcessControl.home_battery_level is not None:
+                    home_battery_level = _get_num_state(
+                        PvExcessControl.home_battery_level
+                    )
+                else:
+                    home_battery_level = None
                 if (
                     export_pwr_state is None
                     or pv_power_state is None
@@ -1119,11 +1124,6 @@ class PvExcessControl:
                 load_pwr = int(load_power_state) - int(current_appliance_pwr_load)
                 ## only applicable if not exporting to grid. likely to have separate sensors and export_pwr_state must be 0
                 ## 300 pv_power_state - load < 300 given there's always some hedge between production and current load when batteries are 100%
-                if PvExcessControl.home_battery_level is not None:
-                    home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
-                else:
-                    home_battery_level = None
-
                 if (
                     PvExcessControl.zero_feed_in
                     and (
