@@ -9,6 +9,7 @@ import datetime
 def _get_state(entity_id: str) -> Union[str, None]:
     """
     Get the state of an entity in Home Assistant
+
     :param entity_id:  Name of the entity
     :return:            State if entity name is valid, else None
     """
@@ -37,6 +38,7 @@ def _get_state(entity_id: str) -> Union[str, None]:
 def _turn_off(entity_id: str) -> bool:
     """
     Switches an entity off
+
     :param entity_id: ID of the entity
     """
     # get entity domain
@@ -60,6 +62,7 @@ def _turn_off(entity_id: str) -> bool:
 def _turn_on(entity_id: str) -> bool:
     """
     Switches an entity on
+
     :param entity_id: ID of the entity
     """
     # get entity domain
@@ -83,6 +86,7 @@ def _turn_on(entity_id: str) -> bool:
 def _set_value(entity_id: str, value: Union[int, float, str]) -> bool:
     """
     Sets a number entity to a specific value
+
     :param entity_id: ID of the entity
     :param value: Numerical value
     :return:
@@ -108,36 +112,48 @@ def _set_value(entity_id: str, value: Union[int, float, str]) -> bool:
 def _get_num_state(
     entity_id: str, return_on_error: Union[float, None] = None
 ) -> Union[float, None]:
+    """
+    Wrapper to get the state of an entity and validate it as a number.
+
+    :param entity_id: Entity ID to fetch state from Home Assistant
     return _validate_number(_get_state(entity_id), return_on_error)
+    :return: State as float if valid, else return_on_error
+    """
+    state_val = _get_state(entity_id)
+    if state_val is None or state_val == "unavailable":
+        return return_on_error
+    return _validate_number(state_val, return_on_error)
 
 
 def _validate_number(
-    num: Union[float, str], return_on_error: Union[float, None] = None
+    value: Union[float, str], return_on_error: Union[float, None] = None
 ) -> Union[float, None]:
     """
-    Validate, if the passed variable is a number between 0 and 1000000.
-    :param num:             Number
+    Validate if the passed variable is a number between -1000000 and 1000000.
+
+    :param value:           Value to validate (can be string or float)
     :param return_on_error: Value to return in case of error
     :return:                Number if valid, else None
     """
-    if num is None or num == "unavailable":
+    if value is None or value == "unavailable":
         return return_on_error
 
     min_v = -1000000
     max_v = 1000000
     try:
-        if min_v <= float(num) <= max_v:
-            return float(num)
+        if min_v <= float(value) <= max_v:
+            return float(value)
         else:
-            raise Exception(f"{float(num)} not in range: [{min_v}, {max_v}]")
+            raise Exception(f"{float(value)} not in range: [{min_v}, {max_v}]")
     except Exception as e:
-        log.error(f"{num=} is not a valid number between 0 and 1000000: {e}")
+        log.error(f"{value=} is not a valid number between -1000000 and 1000000: {e}")
         return return_on_error
 
 
 def _replace_vowels(input: str) -> str:
     """
     Function to replace lowercase vowels in a string
+
     :param input:   Input string
     :return:        String with replaced vowels
     """
@@ -149,6 +165,7 @@ def _replace_vowels(input: str) -> str:
 def _get_time_object(input) -> datetime.time:
     """
     Function to convert input to datetime.time object
+
     :param input:   Input to be processed
     :return:        datetime.time object with value of input, fallback to 23:59
     """
@@ -1513,6 +1530,7 @@ class PvExcessControl:
             # Do not turn off if switch interval not reached
             if inst.switch_interval_counter < inst.appliance_switch_interval:
                 continue
+            # Skip appliances with equal or higher priority than max_priority
             if inst.appliance_priority >= max_priority:
                 continue
             if _get_state(inst.appliance_switch) != "on":
