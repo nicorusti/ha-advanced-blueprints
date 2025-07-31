@@ -571,6 +571,19 @@ blueprint:
       selector:
         boolean:
 
+    appliance_current_interval:
+      name: "Appliance current interval"
+      description: >
+        Defines the minimum time (in minutes) before changing the appliance
+        current again.
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          step: 1
+          unit_of_measurement: min
+
     appliance_current_set_entity:
       name: "Appliance SetCurrent entity"
       description: >
@@ -732,6 +745,7 @@ action:
       dynamic_current_appliance: !input dynamic_current_appliance
       round_target_current: !input round_target_current
       deactivating_current: !input deactivating_current
+      appliance_current_interval: !input appliance_current_interval
       appliance_phases: !input appliance_phases
       min_current: !input min_current
       max_current: !input max_current
