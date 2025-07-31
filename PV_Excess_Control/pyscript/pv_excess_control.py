@@ -152,16 +152,18 @@ def _validate_number(
         return return_on_error
 
 
-def _replace_vowels(input: str) -> str:
+def _replace_vowels(text: str) -> str:
     """
-    Function to replace lowercase vowels in a string
+    Replace lowercase German umlaut vowels with their base equivalents.
 
-    :param input:   Input string
-    :return:        String with replaced vowels
+    :param text: Input string
+    :return:     String with replaced vowels
     """
-    vowel_replacement = {"ä": "a", "ö": "o", "ü": "u"}
-    res = [vowel_replacement[v] if v in vowel_replacement else v for v in input]
-    return "".join(res)
+    replacements = str.maketrans({
+    "ä": "a", "ö": "o", "ü": "u",
+    "Ä": "A", "Ö": "O", "Ü": "U"
+    })
+    return text.translate(replacements)
 
 
 def _get_time_object(input) -> datetime.time:
