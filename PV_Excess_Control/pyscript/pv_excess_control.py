@@ -159,10 +159,9 @@ def _replace_vowels(text: str) -> str:
     :param text: Input string
     :return:     String with replaced vowels
     """
-    replacements = str.maketrans({
-    "ä": "a", "ö": "o", "ü": "u",
-    "Ä": "A", "Ö": "O", "Ü": "U"
-    })
+    replacements = str.maketrans(
+        {"ä": "a", "ö": "o", "ü": "u", "Ä": "A", "Ö": "O", "Ü": "U"}
+    )
     return text.translate(replacements)
 
 
