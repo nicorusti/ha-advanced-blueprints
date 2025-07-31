@@ -135,9 +135,6 @@ def _validate_number(
     :param return_on_error: Value to return in case of error
     :return:                Number if valid, else None
     """
-    if value is None or value == "unavailable":
-        return return_on_error
-
     min_v = -1000000
     max_v = 1000000
     try:
