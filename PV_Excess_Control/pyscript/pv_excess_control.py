@@ -116,13 +116,17 @@ def _get_num_state(
     Wrapper to get the state of an entity and validate it as a number.
 
     :param entity_id: Entity ID to fetch state from Home Assistant
-    return _validate_number(_get_state(entity_id), return_on_error)
+    :param return_on_error: Value to return in case of error
     :return: State as float if valid, else return_on_error
     """
-    state_val = _get_state(entity_id)
-    if state_val is None or state_val == "unavailable":
+    try:
+        state_val = _get_state(entity_id)
+        if state_val is None or state_val == "unavailable":
+            raise ValueError(f"State is invalid: {state_val}")
+        return _validate_number(state_val, return_on_error)
+    except Exception as e:
+        log.error(f"_get_num_state failed for '{entity_id}': {e}")
         return return_on_error
-    return _validate_number(state_val, return_on_error)
 
 
 def _validate_number(
@@ -133,17 +137,18 @@ def _validate_number(
 
     :param value:           Value to validate (can be string or float)
     :param return_on_error: Value to return in case of error
-    :return:                Number if valid, else None
+    :return:                Number if valid, else return_on_error
     """
     min_v = -1000000
     max_v = 1000000
     try:
-        if min_v <= float(value) <= max_v:
-            return float(value)
+        num = float(value)
+        if min_v <= num <= max_v:
+            return num
         else:
-            raise Exception(f"{float(value)} not in range: [{min_v}, {max_v}]")
-    except Exception as e:
-        log.error(f"{value=} is not a valid number between -1000000 and 1000000: {e}")
+            raise ValueError(f"Value {num} not in range: [{min_v}, {max_v}]")
+    except (TypeError, ValueError) as e:
+        log.error(f"_validate_number failed for value '{value}': {e}")
         return return_on_error
 
 
