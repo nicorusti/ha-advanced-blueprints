@@ -260,6 +260,7 @@ def pv_excess_control(
     dynamic_current_appliance,
     round_target_current,
     deactivating_current,
+    appliance_current_interval,
     appliance_phases,
     min_current,
     max_current,
@@ -305,6 +306,7 @@ def pv_excess_control(
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
+        appliance_current_interval,
         appliance_phases,
         min_current,
         max_current,
@@ -379,6 +381,7 @@ class PvExcessControl:
         dynamic_current_appliance,
         round_target_current,
         deactivating_current,
+        appliance_current_interval,
         appliance_phases,
         min_current,
         max_current,
@@ -431,6 +434,7 @@ class PvExcessControl:
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.round_target_current = bool(round_target_current)
         inst.deactivating_current = bool(deactivating_current)
+        inst.appliance_current_interval = int(appliance_current_interval)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
@@ -458,6 +462,7 @@ class PvExcessControl:
         if inst.automation_id not in PvExcessControl.instances:
             inst.switched_on_today = False
             inst.switch_interval_counter = 0
+            inst.current_interval_counter = 0
             inst.switched_on_time = datetime.datetime.now()
             inst.daily_run_time = 0
             inst.trigger_factory()
@@ -747,12 +752,22 @@ class PvExcessControl:
                                 inst.previous_current_buffer == 0 and actual_current > 0
                             )
                         ):
-                            _set_value(
-                                inst.appliance_current_set_entity, target_current
-                            )
-                            log.info(
-                                f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
-                            )
+                            if (
+                                inst.current_interval_counter
+                                >= inst.appliance_current_interval
+                            ):
+                                inst.current_interval_counter = 0
+                                _set_value(
+                                    inst.appliance_current_set_entity, target_current
+                                )
+                                log.info(
+                                    f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
+                                )
+                            else:
+                                log.debug(
+                                    f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
+                                    f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                )
                             # TODO: should we use previously set current below there?
                             diff_power = int(
                                 (target_current - actual_current)
