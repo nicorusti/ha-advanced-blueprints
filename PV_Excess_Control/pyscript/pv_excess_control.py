@@ -508,6 +508,7 @@ class PvExcessControl:
             for a_id, e in PvExcessControl.instances.copy().items():
                 inst = e["instance"]
                 inst.switch_interval_counter += 1
+                inst.current_interval_counter += 1
 
                 # Check if automation is activated for specific instance
                 if not self.automation_activated(inst.automation_id, inst.enabled):
@@ -1012,9 +1013,22 @@ class PvExcessControl:
                                 log.info(
                                     f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
                                 )
-                                _set_value(
-                                    inst.appliance_current_set_entity, target_current
-                                )
+                                if (
+                                    inst.current_interval_counter
+                                    >= inst.appliance_current_interval
+                                ):
+                                    inst.current_interval_counter = 0
+                                    _set_value(
+                                        inst.appliance_current_set_entity, target_current
+                                    )
+                                    log.info(
+                                        f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
+                                    )
+                                else:
+                                    log.debug(
+                                        f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
+                                        f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                    )
                                 # add released power consumption to next appliances in list
                                 diff_power = int(
                                     (actual_current - target_current)
