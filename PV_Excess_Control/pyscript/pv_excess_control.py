@@ -115,9 +115,9 @@ def _get_num_state(
     """
     Wrapper to get the state of an entity and validate it as a number.
 
-    :param entity_id: Entity ID to fetch state from Home Assistant
+    :param entity_id:       Entity ID to fetch state from Home Assistant
     :param return_on_error: Value to return in case of error
-    :return: State as float if valid, else return_on_error
+    :return:                State as float if valid, else return_on_error
     """
     try:
         state_val = _get_state(entity_id)
@@ -137,7 +137,7 @@ def _validate_number(
 
     :param value:           Value to validate (can be string or float)
     :param return_on_error: Value to return in case of error
-    :return:                Number if valid, else return_on_error
+    :return:                Number as float if valid, else return_on_error
     """
     min_v = -1000000
     max_v = 1000000
