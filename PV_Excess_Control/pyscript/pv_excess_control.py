@@ -1019,7 +1019,8 @@ class PvExcessControl:
                                 ):
                                     inst.current_interval_counter = 0
                                     _set_value(
-                                        inst.appliance_current_set_entity, target_current
+                                        inst.appliance_current_set_entity,
+                                        target_current,
                                     )
                                     log.info(
                                         f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
