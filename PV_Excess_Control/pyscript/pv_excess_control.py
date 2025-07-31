@@ -1122,7 +1122,12 @@ class PvExcessControl:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
-                home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
+                if PvExcessControl.home_battery_level is not None:
+                    home_battery_level = _get_num_state(
+                        PvExcessControl.home_battery_level
+                    )
+                else:
+                    home_battery_level = None
                 if (
                     export_pwr_state is None
                     or pv_power_state is None
