@@ -757,13 +757,14 @@ class PvExcessControl:
                                 inst.current_interval_counter
                                 >= inst.appliance_current_interval
                             ):
-                                inst.current_interval_counter = 0
                                 _set_value(
                                     inst.appliance_current_set_entity, target_current
                                 )
                                 log.info(
-                                    f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
+                                    f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase "
+                                    f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
                                 )
+                                inst.current_interval_counter = 0
                             else:
                                 log.debug(
                                     f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
@@ -1014,14 +1015,15 @@ class PvExcessControl:
                                     inst.current_interval_counter
                                     >= inst.appliance_current_interval
                                 ):
-                                    inst.current_interval_counter = 0
                                     _set_value(
                                         inst.appliance_current_set_entity,
                                         target_current,
                                     )
                                     log.info(
-                                        f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
+                                        f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase "
+                                        f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
                                     )
+                                    inst.current_interval_counter = 0
                                 else:
                                     log.debug(
                                         f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
