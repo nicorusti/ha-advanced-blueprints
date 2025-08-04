@@ -820,6 +820,7 @@ class PvExcessControl:
                         ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
+                            inst.current_interval_counter = 0
                             log.info(f"{inst.log_prefix} Switched on appliance.")
                             # "restart" history by subtracting defined power from each history value within the specified time frame
                             log.info(
@@ -1369,6 +1370,7 @@ class PvExcessControl:
             )
             task.sleep(1)
             inst.switch_interval_counter = 0
+            inst.current_interval_counter = 0
             # "restart" history by adding defined power to each history value within the specified time frame
             log.info(
                 f"{inst.log_prefix} Adjusting power history by {power_consumption}W due to appliance switch off"
