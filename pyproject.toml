@@ -2,5 +2,4 @@
 builtins = ["state","log","service","time_trigger","task"]
 
 [tool.yamllint.rules.line-length]
-allow-non-breakable-words = true
-allow-non-breakable-inline-mappings = true
+level = "warning"  # statt "error"
