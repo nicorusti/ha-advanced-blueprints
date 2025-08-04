@@ -574,7 +574,7 @@ blueprint:
     appliance_current_interval:
       name: "Appliance current interval"
       description: >
-        Specifies the minimum time (in minutes) that must pass before the 
+        Specifies the minimum time (in minutes) that must pass before the
         power setting can be dynamically adjusted again.
 
 
