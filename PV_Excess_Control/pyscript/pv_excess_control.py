@@ -1010,9 +1010,6 @@ class PvExcessControl:
                             )
                             if inst.min_current <= target_current < prev_set_amps:
                                 # current can be reduced
-                                log.info(
-                                    f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
-                                )
                                 if (
                                     inst.current_interval_counter
                                     >= inst.appliance_current_interval
