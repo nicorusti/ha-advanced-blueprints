@@ -576,7 +576,7 @@ blueprint:
       description: >
         Defines the minimum time (in minutes) before changing the appliance
         current again.
-      default: 5
+      default: 1
       selector:
         number:
           min: 1
