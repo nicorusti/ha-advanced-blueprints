@@ -850,6 +850,7 @@ class PvExcessControl:
                         ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
+                            inst.current_interval_counter = 0
                             switched_off_appliance_to_switch_on_higher_prioritized_one = True
                             log.info(
                                 f"{inst.log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance."
