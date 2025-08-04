@@ -1,5 +1,5 @@
 [tool.ruff]
 builtins = ["state","log","service","time_trigger","task"]
 
-[tool.yamllint.rules.line-length]
-level = "warning"  # statt "error"
+[tool.yamllint]
+rules = {line-length = {level = "warning"}}
