@@ -9,6 +9,7 @@ import datetime
 def _get_state(entity_id: str) -> Union[str, None]:
     """
     Get the state of an entity in Home Assistant
+
     :param entity_id:  Name of the entity
     :return:            State if entity name is valid, else None
     """
@@ -37,6 +38,7 @@ def _get_state(entity_id: str) -> Union[str, None]:
 def _turn_off(entity_id: str) -> bool:
     """
     Switches an entity off
+
     :param entity_id: ID of the entity
     """
     # get entity domain
@@ -60,6 +62,7 @@ def _turn_off(entity_id: str) -> bool:
 def _turn_on(entity_id: str) -> bool:
     """
     Switches an entity on
+
     :param entity_id: ID of the entity
     """
     # get entity domain
@@ -83,6 +86,7 @@ def _turn_on(entity_id: str) -> bool:
 def _set_value(entity_id: str, value: Union[int, float, str]) -> bool:
     """
     Sets a number entity to a specific value
+
     :param entity_id: ID of the entity
     :param value: Numerical value
     :return:
@@ -108,47 +112,63 @@ def _set_value(entity_id: str, value: Union[int, float, str]) -> bool:
 def _get_num_state(
     entity_id: str, return_on_error: Union[float, None] = None
 ) -> Union[float, None]:
-    return _validate_number(_get_state(entity_id), return_on_error)
+    """
+    Wrapper to get the state of an entity and validate it as a number.
+
+    :param entity_id:       Entity ID to fetch state from Home Assistant
+    :param return_on_error: Value to return in case of error
+    :return:                State as float if valid, else return_on_error
+    """
+    try:
+        state_val = _get_state(entity_id)
+        if state_val is None or state_val == "unavailable":
+            raise ValueError(f"State is invalid: {state_val}")
+        return _validate_number(state_val, return_on_error)
+    except Exception as e:
+        log.error(f"_get_num_state failed for '{entity_id}': {e}")
+        return return_on_error
 
 
 def _validate_number(
-    num: Union[float, str], return_on_error: Union[float, None] = None
+    value: Union[float, str], return_on_error: Union[float, None] = None
 ) -> Union[float, None]:
     """
-    Validate, if the passed variable is a number between 0 and 1000000.
-    :param num:             Number
-    :param return_on_error: Value to return in case of error
-    :return:                Number if valid, else None
-    """
-    if num is None or num == "unavailable":
-        return return_on_error
+    Validate if the passed variable is a number between -1000000 and 1000000.
 
+    :param value:           Value to validate (can be string or float)
+    :param return_on_error: Value to return in case of error
+    :return:                Number as float if valid, else return_on_error
+    """
     min_v = -1000000
     max_v = 1000000
     try:
-        if min_v <= float(num) <= max_v:
-            return float(num)
+        num = float(value)
+        if min_v <= num <= max_v:
+            return num
         else:
-            raise Exception(f"{float(num)} not in range: [{min_v}, {max_v}]")
-    except Exception as e:
-        log.error(f"{num=} is not a valid number between 0 and 1000000: {e}")
+            raise ValueError(f"Value {num} not in range: [{min_v}, {max_v}]")
+    except (TypeError, ValueError) as e:
+        log.error(f"_validate_number failed for value '{value}': {e}")
         return return_on_error
 
 
-def _replace_vowels(input: str) -> str:
+def _replace_vowels(text: str) -> str:
     """
-    Function to replace lowercase vowels in a string
-    :param input:   Input string
-    :return:        String with replaced vowels
+    Replace lowercase German umlaut vowels with their base equivalents.
+
+    :param text: Input string
+    :return:     String with replaced vowels
     """
-    vowel_replacement = {"ä": "a", "ö": "o", "ü": "u"}
-    res = [vowel_replacement[v] if v in vowel_replacement else v for v in input]
-    return "".join(res)
+    replacements = str.maketrans(
+        {"ä": "a", "ö": "o", "ü": "u", "Ä": "A", "Ö": "O", "Ü": "U"}
+    )
+    return text.translate(replacements)
 
 
 def _get_time_object(input) -> datetime.time:
     """
     Function to convert input to datetime.time object
+
     :param input:   Input to be processed
     :return:        datetime.time object with value of input, fallback to 23:59
     """
@@ -241,6 +261,7 @@ def pv_excess_control(
     round_target_current,
     watt_target_current,
     deactivating_current,
+    appliance_current_interval,
     appliance_phases,
     min_current,
     max_current,
@@ -287,6 +308,7 @@ def pv_excess_control(
         round_target_current,
         watt_target_current,
         deactivating_current,
+        appliance_current_interval,
         appliance_phases,
         min_current,
         max_current,
@@ -362,6 +384,7 @@ class PvExcessControl:
         round_target_current,
         watt_target_current,
         deactivating_current,
+        appliance_current_interval,
         appliance_phases,
         min_current,
         max_current,
@@ -415,6 +438,7 @@ class PvExcessControl:
         inst.round_target_current = bool(round_target_current)
         inst.watt_target_current = bool(watt_target_current)
         inst.deactivating_current = bool(deactivating_current)
+        inst.appliance_current_interval = int(appliance_current_interval)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
         inst.appliance_switch = appliance_switch
@@ -442,6 +466,7 @@ class PvExcessControl:
         if inst.automation_id not in PvExcessControl.instances:
             inst.switched_on_today = False
             inst.switch_interval_counter = 0
+            inst.current_interval_counter = 0
             inst.switched_on_time = datetime.datetime.now()
             inst.daily_run_time = 0
             inst.trigger_factory()
@@ -487,6 +512,7 @@ class PvExcessControl:
             for a_id, e in PvExcessControl.instances.copy().items():
                 inst = e["instance"]
                 inst.switch_interval_counter += 1
+                inst.current_interval_counter += 1
 
                 # Check if automation is activated for specific instance
                 if not self.automation_activated(inst.automation_id, inst.enabled):
@@ -742,12 +768,23 @@ class PvExcessControl:
                                 inst.previous_current_buffer == 0 and actual_current > 0
                             )
                         ):
-                            _set_value(
-                                inst.appliance_current_set_entity, target_current
-                            )
-                            log.info(
-                                f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
-                            )
+                            if (
+                                inst.current_interval_counter
+                                >= inst.appliance_current_interval
+                            ):
+                                _set_value(
+                                    inst.appliance_current_set_entity, target_current
+                                )
+                                log.info(
+                                    f"{inst.log_prefix} Increasing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase "
+                                    f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                )
+                                inst.current_interval_counter = 0
+                            else:
+                                log.debug(
+                                    f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
+                                    f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                )
                             # TODO: should we use previously set current below there?
                             diff_power = int(
                                 (target_current - actual_current)
@@ -798,6 +835,7 @@ class PvExcessControl:
                         ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
+                            inst.current_interval_counter = 0
                             log.info(f"{inst.log_prefix} Switched on appliance.")
                             # "restart" history by subtracting defined power from each history value within the specified time frame
                             log.info(
@@ -827,6 +865,7 @@ class PvExcessControl:
                         ):
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
+                            inst.current_interval_counter = 0
                             switched_off_appliance_to_switch_on_higher_prioritized_one = True
                             log.info(
                                 f"{inst.log_prefix} Average Excess power will be high enough by switching off lower prioritized appliance(s). Switched on appliance."
@@ -997,12 +1036,24 @@ class PvExcessControl:
                             )
                             if inst.min_current <= target_current < prev_set_amps:
                                 # current can be reduced
-                                log.info(
-                                    f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase."
-                                )
-                                _set_value(
-                                    inst.appliance_current_set_entity, target_current
-                                )
+                                if (
+                                    inst.current_interval_counter
+                                    >= inst.appliance_current_interval
+                                ):
+                                    _set_value(
+                                        inst.appliance_current_set_entity,
+                                        target_current,
+                                    )
+                                    log.info(
+                                        f"{inst.log_prefix} Reducing dynamic current appliance from {prev_set_amps}A to {target_current}A per phase "
+                                        f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                    )
+                                    inst.current_interval_counter = 0
+                                else:
+                                    log.debug(
+                                        f"{inst.log_prefix} Cannot change current appliance, because appliance current interval is not reached "
+                                        f"({inst.current_interval_counter}/{inst.appliance_current_interval})."
+                                    )
                                 # add released power consumption to next appliances in list
                                 diff_power = int(
                                     (actual_current - target_current)
@@ -1128,7 +1179,12 @@ class PvExcessControl:
                 # Calc values based on separate sensors
                 export_pwr_state = _get_num_state(PvExcessControl.export_power)
                 load_power_state = _get_num_state(PvExcessControl.load_power)
-                home_battery_level = _get_num_state(PvExcessControl.home_battery_level)
+                if PvExcessControl.home_battery_level is not None:
+                    home_battery_level = _get_num_state(
+                        PvExcessControl.home_battery_level
+                    )
+                else:
+                    home_battery_level = None
                 if (
                     export_pwr_state is None
                     or pv_power_state is None
@@ -1338,6 +1394,7 @@ class PvExcessControl:
             )
             task.sleep(1)
             inst.switch_interval_counter = 0
+            inst.current_interval_counter = 0
             # "restart" history by adding defined power to each history value within the specified time frame
             log.info(
                 f"{inst.log_prefix} Adjusting power history by {power_consumption}W due to appliance switch off"
@@ -1536,6 +1593,7 @@ class PvExcessControl:
             # Do not turn off if switch interval not reached
             if inst.switch_interval_counter < inst.appliance_switch_interval:
                 continue
+            # Skip appliances with equal or higher priority than max_priority
             if inst.appliance_priority >= max_priority:
                 continue
             if _get_state(inst.appliance_switch) != "on":
