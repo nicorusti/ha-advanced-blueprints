@@ -382,9 +382,9 @@ blueprint:
           multiple: false
 
     solar_production_forecast_this_hour:
-      name: "Solar production forecast for the current hour (Solcast or Forecast.Solar)"
+      name: "Solar production forecast current hour (Solcast or Forecast.Solar)"
       description: >
-        Sensor which represents the solar forecast  for the current hour (in kWh).
+        Sensor showing the solar forecast for the current hour (in kWh).
         Will be used in case Zero_feed_in is active, to have a better
         estimation of available PV power to be redirected to appliances.
         **[WARNING]**
