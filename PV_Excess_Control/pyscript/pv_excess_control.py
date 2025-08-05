@@ -21,13 +21,14 @@ def _get_state(entity_id: str) -> Union[str, None]:
         log.error(f"Could not get state from entity {entity_id}: {e}")
         return None
 
+    # https://github.com/home-assistant/core/blob/20fdec9e9ccb8bc44cde030de6c579df2ee7bed0/homeassistant/components/climate/const.py#L6
     if domain == "climate":
-        if entity_state.lower() in ["heat", "cool", "boost", "on"]:
+        if entity_state.lower() in ["heat", "cool", "heatcool", "auto", "dry", "fan_only"]: 
             return "on"
         elif entity_state == "off":
             return entity_state
         else:
-            log.error(f"Entity state not supported: {entity_state}")
+            log.error(f"Entity {entity_id} state for climate domain not supported: {entity_state}")
             return None
 
     else:
