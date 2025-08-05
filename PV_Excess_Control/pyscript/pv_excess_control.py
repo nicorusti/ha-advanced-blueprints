@@ -674,22 +674,11 @@ class PvExcessControl:
                         and inst.dynamic_current_appliance
                     ):
                         # try to increase dynamic current, because excess solar power is available
-                        if inst.actual_power is None:
-                            actual_current = round(
-                                (
-                                    inst.defined_current
-                                    * PvExcessControl.grid_voltage
-                                    * inst.phases
-                                )
-                                / (PvExcessControl.grid_voltage * inst.phases),
-                                1,
-                            )
-                        else:
-                            actual_current = round(
-                                _get_num_state(inst.actual_power)
-                                / (PvExcessControl.grid_voltage * inst.phases),
-                                1,
-                            )
+                        actual_current = round(
+                            self._calculate_power_consumption(inst)
+                            / (PvExcessControl.grid_voltage * inst.phases),
+                            1,
+                        )
                         # TODO: prev_set_amps or just actual_current?
                         prev_set_amps = _get_num_state(
                             inst.appliance_current_set_entity,
@@ -827,7 +816,7 @@ class PvExcessControl:
                     elif (
                         not switched_off_appliance_to_switch_on_higher_prioritized_one
                     ) and (
-                        self.calculate_pwr_reducible(inst.appliance_priority)
+                        self._calculate_pwr_reducible(inst.appliance_priority)
                         + avg_excess_power
                     ) >= (defined_power if inst.appliance_priority <= 1000 else 0):
                         # excess power is sufficient by switching off lower prioritized appliance(s)
@@ -868,16 +857,7 @@ class PvExcessControl:
                 if _get_state(inst.appliance_switch) == "on":
                     # check if inst.appliance_priority > 1000 and switching of will cause excess. In that case keep it on
                     if inst.appliance_priority > 1000:
-                        if inst.actual_power is None:
-                            allowed_excess_power_consumption = (
-                                inst.defined_current
-                                * PvExcessControl.grid_voltage
-                                * inst.phases
-                            )
-                        else:
-                            allowed_excess_power_consumption = _get_num_state(
-                                inst.actual_power
-                            )
+                        allowed_excess_power_consumption = self._calculate_power_consumption(inst)
                     # 07.03.2025 elif inst.dynamic_current_appliance:
                     #    allowed_excess_power_consumption = (
                     #        inst.defined_current
@@ -1328,12 +1308,7 @@ class PvExcessControl:
         else:
             # switch off
             # get last power consumption
-            if inst.actual_power is None:
-                power_consumption = (
-                    inst.defined_current * PvExcessControl.grid_voltage * inst.phases
-                )
-            else:
-                power_consumption = _get_num_state(inst.actual_power)
+            power_consumption = self._calculate_power_consumption(inst)
             log.debug(
                 f"{inst.log_prefix} Current power consumption: {power_consumption} W"
             )
@@ -1529,7 +1504,7 @@ class PvExcessControl:
 
         return False
 
-    def calculate_pwr_reducible(self, max_priority):
+    def _calculate_pwr_reducible(self, max_priority):
         """
         Calculates the reducible power by switching off all appliances, which can be switched off and have a priority below max_priority
         :param  max_priority: see description
@@ -1550,11 +1525,24 @@ class PvExcessControl:
                 continue
             if _get_state(inst.appliance_switch) != "on":
                 continue
-            if inst.actual_power is None:
-                pwr_reducible += (
-                    inst.defined_current * PvExcessControl.grid_voltage * inst.phases
-                )
-            else:
-                pwr_reducible += _get_num_state(inst.actual_power)
-
+            pwr_reducible += self._calculate_power_consumption(inst)
+            
         return pwr_reducible
+
+    def _calculate_power_consumption(self, inst) -> float:
+        """
+        Calculates the power consumption of a device instance.
+    
+        If `actual_power` is available, it uses that value.
+        Otherwise, it estimates power based on defined current, grid voltage, and number of phases.
+    
+        :param inst: The device instance containing power-related attributes.
+        :return: The calculated or measured power consumption in watts (float).
+        """
+        if inst.actual_power:
+            # Use the actual measured power if available
+            return _get_num_state(inst.actual_power)
+        else:
+            # Estimate power: current × voltage × phases
+            return inst.defined_current * PvExcessControl.grid_voltage * inst.phases
+
