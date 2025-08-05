@@ -772,9 +772,7 @@ class PvExcessControl:
                     #   or if the appliance has a high priority (see #64)
                     #   or if the appliance should be turned anyways to meet appliance_minimum_run_time
                     defined_power = int(
-                        inst.defined_current
-                        * PvExcessControl.grid_voltage
-                        * inst.phases
+                        self._estimate_power_consumption(inst)
                     )
                     if (
                         avg_excess_power >= defined_power
@@ -899,14 +897,7 @@ class PvExcessControl:
 
                     # Note that we add the current appliance usage to the appliance excess power, because we want to continue
                     # running if the current appliance is only partially using excess power
-                    if inst.actual_power is None:
-                        power_consumption = (
-                            inst.defined_current
-                            * PvExcessControl.grid_voltage
-                            * inst.phases
-                        )
-                    else:
-                        power_consumption = _get_num_state(inst.actual_power)
+                    power_consumption = self._calculate_power_consumption(inst)
                     appliance_excess_power = avg_excess_power + power_consumption
 
                     # Check if we don't have enough excess power and if we aren't trying to meet a minimum run time --> Turn off
@@ -930,22 +921,11 @@ class PvExcessControl:
 
                         # check if current of dyn. curr. appliance can be reduced
                         if inst.dynamic_current_appliance:
-                            if inst.actual_power is None:
-                                actual_current = round(
-                                    (
-                                        inst.defined_current
-                                        * PvExcessControl.grid_voltage
-                                        * inst.phases
-                                    )
-                                    / (PvExcessControl.grid_voltage * inst.phases),
-                                    1,
-                                )
-                            else:
-                                actual_current = round(
-                                    _get_num_state(inst.actual_power)
-                                    / (PvExcessControl.grid_voltage * inst.phases),
-                                    1,
-                                )
+                            actual_current = round(
+                                self._calculate_power_consumption(inst)
+                                / (PvExcessControl.grid_voltage * inst.phases),
+                                1,
+                            )
                             # TODO: prev_set_amps or just actual_current?
                             prev_set_amps = _get_num_state(
                                 inst.appliance_current_set_entity,
@@ -1083,14 +1063,7 @@ class PvExcessControl:
             for e in PvExcessControl.instances.values():
                 inst = e["instance"]
                 if _get_state(inst.appliance_switch) == "on":
-                    if inst.actual_power is None:
-                        power_consumption = (
-                            inst.defined_current
-                            * PvExcessControl.grid_voltage
-                            * inst.phases
-                        )
-                    else:
-                        power_consumption = _get_num_state(inst.actual_power)
+                    power_consumption = self._calculate_power_consumption(inst)
 
                     current_appliance_pwr_load = (
                         current_appliance_pwr_load + power_consumption
@@ -1445,8 +1418,8 @@ class PvExcessControl:
             return False
 
         # Calculate remaining appliance power need to meet minimum runtime
-        defined_power = int(
-            inst.defined_current * PvExcessControl.grid_voltage * inst.phases
+        defined_power = int( 
+            self._estimate_power_consumption(inst)
         )
         projected_future_power_usage = (
             -1
@@ -1546,4 +1519,18 @@ class PvExcessControl:
             return _get_num_state(inst.actual_power)
         else:
             # Estimate power: current × voltage × phases
-            return inst.defined_current * PvExcessControl.grid_voltage * inst.phases
+            return self._estimate_power_consumption(inst)
+
+    def _estimate_power_consumption(self, inst) -> float:
+        """
+        Estimate the power consumption of a device instance.
+
+        It estimates power based on defined current, grid voltage, and number of phases.
+
+        :param inst: The device instance containing power-related attributes.
+        :return: The calculated power consumption in watts (float).
+        """
+        # Estimate power: current × voltage × phases
+        if not all([inst.defined_current, PvExcessControl.grid_voltage, inst.phases]):
+            raise ValueError("Missing data for power estimation.")
+        return inst.defined_current * PvExcessControl.grid_voltage * inst.phases
