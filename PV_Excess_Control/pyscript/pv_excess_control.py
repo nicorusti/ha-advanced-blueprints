@@ -857,7 +857,9 @@ class PvExcessControl:
                 if _get_state(inst.appliance_switch) == "on":
                     # check if inst.appliance_priority > 1000 and switching of will cause excess. In that case keep it on
                     if inst.appliance_priority > 1000:
-                        allowed_excess_power_consumption = self._calculate_power_consumption(inst)
+                        allowed_excess_power_consumption = (
+                            self._calculate_power_consumption(inst)
+                        )
                     # 07.03.2025 elif inst.dynamic_current_appliance:
                     #    allowed_excess_power_consumption = (
                     #        inst.defined_current
@@ -1526,16 +1528,16 @@ class PvExcessControl:
             if _get_state(inst.appliance_switch) != "on":
                 continue
             pwr_reducible += self._calculate_power_consumption(inst)
-            
+
         return pwr_reducible
 
     def _calculate_power_consumption(self, inst) -> float:
         """
         Calculates the power consumption of a device instance.
-    
+
         If `actual_power` is available, it uses that value.
         Otherwise, it estimates power based on defined current, grid voltage, and number of phases.
-    
+
         :param inst: The device instance containing power-related attributes.
         :return: The calculated or measured power consumption in watts (float).
         """
@@ -1545,4 +1547,3 @@ class PvExcessControl:
         else:
             # Estimate power: current × voltage × phases
             return inst.defined_current * PvExcessControl.grid_voltage * inst.phases
-
