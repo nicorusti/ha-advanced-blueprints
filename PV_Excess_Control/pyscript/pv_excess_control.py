@@ -771,9 +771,7 @@ class PvExcessControl:
                     # Check if there is sufficient excess power to power the appliance
                     #   or if the appliance has a high priority (see #64)
                     #   or if the appliance should be turned anyways to meet appliance_minimum_run_time
-                    defined_power = int(
-                        self._estimate_power_consumption(inst)
-                    )
+                    defined_power = int(self._estimate_power_consumption(inst))
                     if (
                         avg_excess_power >= defined_power
                         or (inst.appliance_priority > 1000 and avg_excess_power > 0)
@@ -1418,9 +1416,7 @@ class PvExcessControl:
             return False
 
         # Calculate remaining appliance power need to meet minimum runtime
-        defined_power = int( 
-            self._estimate_power_consumption(inst)
-        )
+        defined_power = int(self._estimate_power_consumption(inst))
         projected_future_power_usage = (
             -1
             * (
