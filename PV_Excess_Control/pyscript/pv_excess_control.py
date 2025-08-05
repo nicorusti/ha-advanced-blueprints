@@ -1061,7 +1061,7 @@ class PvExcessControl:
             for e in PvExcessControl.instances.values():
                 inst = e["instance"]
                 if _get_state(inst.appliance_switch) == "on":
-                    power_consumption = self._calculate_power_consumption(inst)
+                    power_consumption = _calculate_power_consumption(inst)
 
                     current_appliance_pwr_load = (
                         current_appliance_pwr_load + power_consumption
