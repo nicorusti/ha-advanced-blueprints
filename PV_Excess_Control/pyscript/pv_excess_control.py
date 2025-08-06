@@ -1485,6 +1485,7 @@ class PvExcessControl:
     def _calculate_pwr_reducible(self, max_priority):
         """
         Calculates the reducible power by switching off all appliances, which can be switched off and have a priority below max_priority
+
         :param  max_priority: see description
         :return:              reducible power
         """
