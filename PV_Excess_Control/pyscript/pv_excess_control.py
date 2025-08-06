@@ -1339,16 +1339,16 @@ class PvExcessControl:
     def _adjust_pwr_history(self, inst, value):
         """
         Adjusts the historical power data for export and PV excess based on a given value.
-    
+
         This method modifies the last `appliance_switch_interval` entries in the export and PV excess history
         by adding the specified value. It ensures export values do not fall below zero.
-    
+
         :param inst: The device instance containing the `appliance_switch_interval` attribute.
         :param value: The numeric value to adjust the history entries by (can be positive or negative).
         :return: None
         """
         log.debug(f"Adjusting power history by {value}.")
-        
+
         # Adjust PV export history - Only if zero feed-in is not active
         if not (PvExcessControl.zero_feed_in):
             log.debug(f"Export history: {PvExcessControl.export_history}")
@@ -1376,7 +1376,7 @@ class PvExcessControl:
         """
         Calculates if the remaining solar power forecast is enough to ensure the specified min. home battery level is reached at the end
         of the day.
-        
+
         :param kwh_offset:  Offset in kWh, which will be added to the calculated remaining battery capacity to ensure an earlier
                             triggering of a force charge
         :return:            True if force charge is necessary, False otherwise
@@ -1431,7 +1431,7 @@ class PvExcessControl:
         """
         Calculates if the appliance should be force turned on in case the remaining solar production forecast is not fully sufficient to run loads and
         the appliance ran for appliance_minimum_run_time, but there is still some excess production
-        
+
         :param inst:        PVExcesscontrol Class instance
         :return:            True if remaining production is insufficient but there is still some excess power, false otherwise
         """
