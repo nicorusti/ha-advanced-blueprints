@@ -5,10 +5,10 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 ## Features
 
 :white_check_mark: Works with hybrid and standard inverters\
-:white_check_mark: Works with hybrid installations that does not inject power onto the grid (zero feed in)
+:white_check_mark: Works with hybrid installations that does not inject power onto the grid (zero feed in)\
 :white_check_mark: Configurable priority handling between multiple appliances\
 :white_check_mark: Include solar forecasts from **Solcast** to ensure your home battery is charged to a specific level at the end of the day\
-:white_check_mark: Battery charge logic considers hitorical energy consumption and optional appliance(s) consumption(s)s;
+:white_check_mark: Battery charge logic considers hitorical energy consumption and optional appliance(s) consumption(s)s;\
 :white_check_mark: Define an \_On/Off switch interval\* / solar power averaging interval\
 :white_check_mark: Supports dynamic current control (e.g. for wallboxes)\
 :white_check_mark: Define min. and max. current for appliances supporting dynamic current control\
