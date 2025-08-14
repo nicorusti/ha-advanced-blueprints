@@ -452,9 +452,7 @@ class PvExcessControl:
         inst.enforce_minimum_run = False
         inst.min_solar_percent = min_solar_percent / 100
         inst.enabled = enabled
-
-        inst.phases = appliance_phases
-
+        inst.phases = int(appliance_phases) if appliance_phases and str(appliance_phases).isdigit() else 1
         inst.log_prefix = f"[{inst.appliance_switch} {inst.automation_id} (Prio {inst.appliance_priority})]"
         inst.domain = inst.appliance_switch.split(".")[0]
 
