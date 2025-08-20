@@ -249,7 +249,6 @@ def pv_excess_control(
     zero_feed_in_level,
     dynamic_current_appliance,
     round_target_current,
-    watt_target_current,
     deactivating_current,
     appliance_phases,
     min_current,
@@ -295,7 +294,6 @@ def pv_excess_control(
         zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
-        watt_target_current,
         deactivating_current,
         appliance_phases,
         min_current,
@@ -370,7 +368,6 @@ class PvExcessControl:
         zero_feed_in_level,
         dynamic_current_appliance,
         round_target_current,
-        watt_target_current,
         deactivating_current,
         appliance_phases,
         min_current,
@@ -423,7 +420,6 @@ class PvExcessControl:
 
         inst.dynamic_current_appliance = bool(dynamic_current_appliance)
         inst.round_target_current = bool(round_target_current)
-        inst.watt_target_current = bool(watt_target_current)
         inst.deactivating_current = bool(deactivating_current)
         inst.min_current = float(min_current)
         inst.max_current = float(max_current)
@@ -698,17 +694,6 @@ class PvExcessControl:
                                     ),
                                 ),
                             )
-                        elif inst.watt_target_current:
-                            target_current = int(
-                                max(
-                                    inst.min_current,
-                                    min(
-                                        (actual_current + diff_current)
-                                        * (PvExcessControl.grid_voltage * inst.phases),
-                                        inst.max_current,
-                                    ),
-                                ),
-                            )
                         else:
                             target_current = round(
                                 max(
@@ -945,14 +930,6 @@ class PvExcessControl:
                                 target_current = int(
                                     max(
                                         inst.min_current, actual_current + diff_current
-                                    ),
-                                )
-                            elif inst.watt_target_current:
-                                target_current = int(
-                                    max(
-                                        inst.min_current,
-                                        (actual_current + diff_current)
-                                        * (PvExcessControl.grid_voltage * inst.phases),
                                     ),
                                 )
                             else:
