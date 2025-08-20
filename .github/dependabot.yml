@@ -11,9 +11,3 @@ updates:
       - "pr: dependency-update"
     schedule:
       interval: "weekly"
-  - package-ecosystem: pip
-    directory: "/"
-    labels:
-      - "pr: dependency-update"
-    schedule:
-      interval: "weekly"
