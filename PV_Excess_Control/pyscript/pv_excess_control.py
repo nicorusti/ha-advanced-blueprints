@@ -629,8 +629,8 @@ class PvExcessControl:
                         / max(1, inst.appliance_switch_off_interval)
                     )
                     log.debug(
-                        f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %)"
-                        f" OR remaining solar forecast is higher than remaining capacity of home battery. "
+                        f"{inst.log_prefix} Home battery charge is sufficient ({home_battery_level}/{PvExcessControl.min_home_battery_level} %) "
+                        f"OR remaining solar forecast is higher than remaining capacity of home battery. "
                         f"Calculated average excess power based on >> solar power - load power <<: {avg_excess_power} W"
                     )
 
@@ -818,11 +818,11 @@ class PvExcessControl:
                             self.switch_on(inst)
                             inst.switch_interval_counter = 0
                             inst.current_interval_counter = 0
-                            log.info(f"{inst.log_prefix} Switched on appliance.")
-                            # "restart" history by subtracting defined power from each history value within the specified time frame
                             log.info(
-                                f"{inst.log_prefix} Adjusting power history by {-defined_power}W due to start of appliance"
+                                f"{inst.log_prefix} Switched on appliance. "
+                                f"Adjusting power history by {-defined_power}W due to start of appliance"
                             )
+                            # "restart" history by subtracting defined power from each history value within the specified time frame
                             self._adjust_pwr_history(inst, -defined_power)
                             task.sleep(1)
                             if inst.dynamic_current_appliance:
@@ -1332,9 +1332,8 @@ class PvExcessControl:
             inst.daily_run_time += (
                 datetime.datetime.now() - inst.switched_on_time
             ).total_seconds()
-            log.info(f"{inst.log_prefix} Switched off appliance.")
             log.info(
-                f"{inst.log_prefix} Appliance has run for {(inst.daily_run_time / 60):.1f} minutes"
+                f"{inst.log_prefix} Switched off appliance. Appliance has run for {(inst.daily_run_time / 60):.1f} minutes"
             )
             task.sleep(1)
             inst.switch_interval_counter = 0
