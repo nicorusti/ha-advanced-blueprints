@@ -689,9 +689,9 @@ class PvExcessControl:
                         + (
                             datetime.datetime.now() - inst.switched_on_time
                         ).total_seconds()
-                    )
+                    ) / 60
                     log.debug(
-                        f"{inst.log_prefix} Appliance is already switched on and has run for {(run_time / 60):.1f} minutes."
+                        f"{inst.log_prefix} Appliance is already switched on and has run for {(run_time):.1f} minutes."
                     )
                     if (
                         avg_excess_power >= PvExcessControl.min_excess_power
