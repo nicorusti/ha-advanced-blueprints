@@ -272,13 +272,14 @@ blueprint:
               mode: slider
         min_home_battery_level_start:
           name: Minimum home battery level (to start forecast optimization)
-          description: 'Battery level (in percent) at which forecast optimization begins.
-          
+          description:
+            "Battery level (in percent) at which forecast optimization begins.
+
             **Behavior:**
             - **0%**: Always use forecast optimization (old False behavior)
-            - **Same as end-of-day level**: Ignore forecast completely (old True behavior)  
+            - **Same as end-of-day level**: Ignore forecast completely (old True behavior)
             - **Between 0% and end-of-day**: Hybrid mode - above this level, forecast optimization starts
-            
+
             **Examples:**
             - Set to 30% with end-of-day 80%: Below 30% only use export power, above 30% use forecast-optimized PV excess
             - Set to 80% with end-of-day 80%: Always ignore forecast, use PV excess immediately when battery ≥ 80%
@@ -291,15 +292,15 @@ blueprint:
             **[NOTE]**
 
             - *The home battery will be charged to this level before forecast optimization begins.*
-            
-            '
+
+            "
           default: 0
           selector:
             number:
               min: 0.0
               max: 100.0
               step: 5.0
-              unit_of_measurement: '%'
+              unit_of_measurement: "%"
               mode: slider
         home_battery_capacity:
           name: Home battery capacity
@@ -535,7 +536,7 @@ blueprint:
         appliance_switch_interval:
           name: Appliance On/Off switch interval
           description:
-            "Defines the minimum time (in minutes) before switching the appliance
+            "Defines the minimum time (in seconds) before switching the appliance
             on/off again.
 
             Will also be used as the averaging interval for available excess power.
@@ -547,21 +548,29 @@ blueprint:
             the here defined time till your appliance can switch on, even if enough excess
             solar is available beforehand. This is due to the excess_history getting populated
             with zeros at the beginning.
-            - Always keep this above 0 min!
+            - Always keep this above 0 s!
+
+            **[WARNING]**
+
+            - **Breaking change**: This value is now in seconds instead of minutes.
+            Multiply your old value by 60 (e.g. old value 5 min = new value 300 s).
+            - Setting very low values (< 30s) may cause excessive switching on
+            electromechanical relays. Use with caution on hardware that is not rated
+            for frequent switching.
 
             "
-          default: 5
+          default: 300
           selector:
             number:
               min: 1.0
-              max: 60.0
+              max: 3600.0
               step: 1.0
-              unit_of_measurement: min
+              unit_of_measurement: s
               mode: slider
         appliance_switch_off_interval:
           name: Appliance Off switch interval
           description:
-            "Defines the minimum time (in minutes) before switching the appliance
+            "Defines the minimum time (in seconds) before switching the appliance
             off again.
 
             Will also be used as the averaging interval for available excess power.
@@ -571,14 +580,22 @@ blueprint:
 
             - This currently only applies to dynamic current instances
 
+            **[WARNING]**
+
+            - **Breaking change**: This value is now in seconds instead of minutes.
+            Multiply your old value by 60 (e.g. old value 5 min = new value 300 s).
+            - Setting very low values (< 30s) may cause excessive switching on
+            electromechanical relays. Use with caution on hardware that is not rated
+            for frequent switching.
+
             "
-          default: 5
+          default: 300
           selector:
             number:
               min: 1.0
-              max: 60.0
+              max: 3600.0
               step: 1.0
-              unit_of_measurement: min
+              unit_of_measurement: s
               mode: slider
         appliance_on_only:
           name: Only-On-Appliance
@@ -764,7 +781,7 @@ blueprint:
         appliance_current_interval:
           name: Appliance current interval
           description:
-            "Specifies the minimum time (in minutes) that must pass before
+            "Specifies the minimum time (in seconds) that must pass before
             the power setting can be dynamically adjusted again.
 
 
@@ -772,14 +789,21 @@ blueprint:
 
             - **Only relevant when dynamic current control is set!**
 
+            **[WARNING]**
+
+            - **Breaking change**: This value is now in seconds instead of minutes.
+            Multiply your old value by 60 (e.g. old value 1 min = new value 60 s).
+            - Setting very low values (< 10s) may cause rapid current changes.
+            Ensure your hardware supports frequent adjustments.
+
             "
-          default: 1
+          default: 60
           selector:
             number:
               min: 1.0
-              max: 60.0
+              max: 3600.0
               step: 1.0
-              unit_of_measurement: min
+              unit_of_measurement: s
               mode: slider
         appliance_current_set_entity:
           name: Appliance SetCurrent entity
