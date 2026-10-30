@@ -920,6 +920,9 @@ mode: single
 triggers:
   - trigger: event
     event_type: pyscript_services_ready
+  # re-register after saving/reloading automations, so config changes apply without a manual run
+  - trigger: event
+    event_type: automation_reloaded
 action:
   - service: pyscript.pv_excess_control
     data:

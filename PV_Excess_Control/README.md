@@ -55,7 +55,7 @@ Automatically control your appliances (wallbox, heatpump, washing machine, ...) 
 ### Initial Configuration
 
 - For each appliance which should be controlled, create a new automation based on the _PV Excess Control_ blueprint
-- After creating the automation, manually execute it once. This will send the chosen configuration parameters and sensors to the python module and start the optimizer in the background
+- After creating and saving the automation, the configuration parameters and sensors are sent to the python module automatically (on automation reload) and the optimizer starts in the background. If in doubt, manually execute the automation once.
 - The python module stays active in background, even if HA or the complete system is restarted
 
 ### Zero feed in option
@@ -76,7 +76,7 @@ However, under a fully working and tuned setup, the automation is almost always 
 ### Update
 
 - To update the configuration, simply update the chosen parameters and values in your automation, which was created based on the blueprint.
-- After that, manually execute the automation once to send the changes to the python module
+- Saving the automation reloads automations, which sends the changes to the python module automatically (no manual run needed anymore)
 
 ### Deactivation
 
