@@ -590,6 +590,11 @@ class PvExcessControl:
                     home_battery_level = _get_num_state(
                         PvExcessControl.home_battery_level
                     )
+                if home_battery_level is None:
+                    log.warning(
+                        f"{inst.log_prefix} Home battery level unavailable, skipping this cycle."
+                    )
+                    continue
                 
                 # New logic with percentage-based start level
                 if home_battery_level < PvExcessControl.min_home_battery_level_start:
@@ -1132,7 +1137,12 @@ class PvExcessControl:
                             * inst.phases
                         )
                     else:
-                        power_consumption = _get_num_state(inst.actual_power)
+                        power_consumption = _get_num_state(
+                            inst.actual_power,
+                            return_on_error=inst.defined_current
+                            * PvExcessControl.grid_voltage
+                            * inst.phases,
+                        )
 
                     current_appliance_pwr_load = (
                         current_appliance_pwr_load + power_consumption
@@ -1548,9 +1558,9 @@ class PvExcessControl:
             else:
                 # Calc values based on separate sensors
                 load_power = _get_num_state(PvExcessControl.load_power)
-        except Exception:
+        except Exception as e:
             log.error(
-                "Could not get the current load power, using default of 500 - {e}"
+                f"Could not get the current load power, using default of 500 - {e}"
             )
             load_power = 500
         remaining_usage = time_of_sunset * load_power / 1000
@@ -1616,7 +1626,10 @@ class PvExcessControl:
         """
         if inst.actual_power:
             # Use the actual measured power if available
-            return _get_num_state(inst.actual_power)
+            return _get_num_state(
+                inst.actual_power,
+                return_on_error=self._estimate_power_consumption(inst),
+            )
         else:
             # Estimate power: current × voltage × phases
             return self._estimate_power_consumption(inst)
