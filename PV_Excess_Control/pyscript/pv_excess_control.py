@@ -1,6 +1,7 @@
 # INFO --------------------------------------------
 # This is intended to be called once manually or on startup. See blueprint.
 # Automations can be deactivated correctly from the UI!
+# The daily runtime of each appliance is persisted in pyscript.pv_excess_runtime_<automation> (survives restarts).
 # -------------------------------------------------
 from typing import Union
 import datetime
@@ -201,6 +202,58 @@ def _get_time_object(input) -> datetime.time:
         return datetime.time(23, 59, 0)
 
 
+def _runtime_entity_id(automation_id: str) -> str:
+    """
+    Build the pyscript entity ID used to persist the daily runtime of an appliance.
+
+    :param automation_id: Normalized automation entity ID (e.g. automation.pv_excess_dryer)
+    :return:              Entity ID like pyscript.pv_excess_runtime_pv_excess_dryer
+    """
+    name = automation_id.split(".", 1)[-1].lower()
+    name = "".join([c if (c.isalnum() and c.isascii()) or c == "_" else "_" for c in name])
+    return f"pyscript.pv_excess_runtime_{name}"
+
+
+def _persist_runtime(inst):
+    """
+    Write the daily runtime of an appliance to its persistent pyscript entity, so it survives restarts.
+
+    :param inst: PvExcessControl instance
+    """
+    try:
+        state.set(
+            inst.runtime_entity,
+            round(inst.daily_run_time / 60, 1),
+            unit_of_measurement="min",
+            date=datetime.date.today().isoformat(),
+            friendly_name=f"PV Excess runtime {inst.automation_id}",
+        )
+    except Exception as e:
+        log.error(f"{inst.log_prefix} Could not persist daily runtime: {e}")
+
+
+def _restore_runtime(entity_id: str) -> float:
+    """
+    Restore the daily runtime (in seconds) from the persistent pyscript entity, if it was stored today.
+
+    :param entity_id: Runtime entity ID
+    :return:          Daily runtime in seconds, 0 if not available or from another day
+    """
+    try:
+        state.persist(
+            entity_id,
+            default_value=0,
+            default_attributes={"date": datetime.date.today().isoformat()},
+        )
+        attrs = state.getattr(entity_id) or {}
+        if attrs.get("date") != datetime.date.today().isoformat():
+            return 0
+        return float(state.get(entity_id)) * 60
+    except Exception as e:
+        log.error(f"Could not restore daily runtime from {entity_id}: {e}")
+        return 0
+
+
 @time_trigger("cron(0 0 * * *)")
 def reset_midnight():
     log.info("Resetting 'switched_on_today' instance variables.")
@@ -209,6 +262,7 @@ def reset_midnight():
         inst.switched_on_today = False
         inst.enforce_minimum_run = False
         inst.daily_run_time = 0
+        _persist_runtime(inst)
         # If appliance is on at reset time, also reset switched_on_time
         if _get_state(inst.appliance_switch) == "on":
             inst.switched_on_time = datetime.datetime.now()
@@ -242,7 +296,13 @@ def enforce_runtime():
         )
 
         if remaining_runtime > 0:
-            if now >= latest_activation:
+            if now >= runtime_deadline:
+                if inst.enforce_minimum_run:
+                    log.info(
+                        f"{inst.log_prefix} Runtime deadline {runtime_deadline} passed, minimum runtime not met. Stopping enforcement."
+                    )
+                inst.enforce_minimum_run = False
+            elif now >= latest_activation:
                 log.info(
                     f"{inst.log_prefix} Minimum runtime not met, turning on appliance to reach charging deadline at {runtime_deadline}."
                 )
@@ -488,7 +548,12 @@ class PvExcessControl:
             inst.switch_interval_counter = 0
             inst.current_interval_counter = 0
             inst.switched_on_time = datetime.datetime.now()
-            inst.daily_run_time = 0
+            inst.runtime_entity = _runtime_entity_id(inst.automation_id)
+            inst.daily_run_time = _restore_runtime(inst.runtime_entity)
+            if inst.daily_run_time > 0:
+                log.info(
+                    f"{inst.log_prefix} Restored daily runtime of {(inst.daily_run_time / 60):.1f} minutes."
+                )
             inst.trigger_factory()
             PvExcessControl.instances[inst.automation_id] = {
                 "instance": inst,
@@ -534,6 +599,11 @@ class PvExcessControl:
                 inst.switch_interval_counter += 1
                 inst.current_interval_counter += 1
 
+                # Count daily runtime (this loop runs once per minute), also when switched on manually
+                if _get_state(inst.appliance_switch) == "on":
+                    inst.daily_run_time += 60
+                    _persist_runtime(inst)
+
                 # Check if automation is activated for specific instance
                 if not self.automation_activated(inst.automation_id, inst.enabled):
                     continue
@@ -541,6 +611,14 @@ class PvExcessControl:
                 # Check if we are enforcing the minimum daily run time
                 # This gets set by enforce_runtime() if daily run time was not sufficient to reach expected deadline
                 # and forces the appliance on no matter what until minimum runtime is met
+                if inst.enforce_minimum_run and datetime.datetime.now() >= datetime.datetime.combine(
+                    datetime.date.today(), inst.appliance_runtime_deadline
+                ):
+                    log.info(
+                        f"{inst.log_prefix} Runtime deadline {inst.appliance_runtime_deadline} passed. Stopping minimum runtime enforcement."
+                    )
+                    inst.enforce_minimum_run = False
+
                 if inst.enforce_minimum_run:
                     # If we aren't on, then turn on
                     if _get_state(inst.appliance_switch) != "on":
@@ -550,12 +628,7 @@ class PvExcessControl:
                         )
 
                     # Update runtime
-                    run_time = (
-                        inst.daily_run_time
-                        + (
-                            datetime.datetime.now() - inst.switched_on_time
-                        ).total_seconds()
-                    ) / 60
+                    run_time = inst.daily_run_time / 60
                     log.debug(
                         f"{inst.log_prefix} Appliance has run for {run_time:.1f} minutes (min: {inst.appliance_minimum_run_time}, max: {inst.appliance_maximum_run_time})."
                     )
@@ -718,12 +791,7 @@ class PvExcessControl:
                 # Determine if appliance can be turned on or current can be increased
                 if _get_state(inst.appliance_switch) == "on":
                     # check if current of appliance can be increased
-                    run_time = (
-                        inst.daily_run_time
-                        + (
-                            datetime.datetime.now() - inst.switched_on_time
-                        ).total_seconds()
-                    ) / 60
+                    run_time = inst.daily_run_time / 60
                     log.debug(
                         f"{inst.log_prefix} Appliance is already switched on and has run for {(run_time):.1f} minutes."
                     )
@@ -928,12 +996,7 @@ class PvExcessControl:
 
                     # Check if appliance already run its maximum runtime and if so, turn it off
                     # TODO: this approach does not work when the appliance gets switched on manually, outside of this automation
-                    run_time = (
-                        inst.daily_run_time
-                        + (
-                            datetime.datetime.now() - inst.switched_on_time
-                        ).total_seconds()
-                    ) / 60
+                    run_time = inst.daily_run_time / 60
                     log.debug(
                         f"{inst.log_prefix} Appliance is on, and it has run for {run_time:.1f} out of maximum {inst.appliance_maximum_run_time:.1f} minutes"
                     )
@@ -1373,9 +1436,6 @@ class PvExcessControl:
             )
             # switch off appliance
             _turn_off(inst.appliance_switch)
-            inst.daily_run_time += (
-                datetime.datetime.now() - inst.switched_on_time
-            ).total_seconds()
             log.info(
                 f"{inst.log_prefix} Switched off appliance. Appliance has run for {(inst.daily_run_time / 60):.1f} minutes"
             )
