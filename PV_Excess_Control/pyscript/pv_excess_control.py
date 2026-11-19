@@ -131,8 +131,12 @@ def _get_num_state(
     """
     try:
         state_val = _get_state(entity_id)
-        if state_val is None or state_val == "unavailable":
-            raise ValueError(f"State is invalid: {state_val}")
+        if state_val is None or state_val in ("unavailable", "unknown"):
+            log.debug(
+                f"State for entity {entity_id} is '{state_val}' (not yet available); "
+                f"returning default: {return_on_error}"
+            )
+            return return_on_error
         return _validate_number(state_val, return_on_error)
     except Exception as e:
         log.error(f"_get_num_state failed for '{entity_id}': {e}")
@@ -1239,7 +1243,7 @@ class PvExcessControl:
                     excess_pwr = int(pv_power_state - load_power_state)
                     log.debug(f"planned excess calc:  {excess_pwr}")
         except Exception as e:
-            log.error(f"Could not update Export/PV history!: {e}")
+            log.warning(f"Could not update Export/PV history!: {e}")
             return
         else:
             # Override : If Pv production is neglible, battery is masking grid balance.
